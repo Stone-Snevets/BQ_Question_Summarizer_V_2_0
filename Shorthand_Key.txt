@@ -1,0 +1,39 @@
+When this program runs, it creates a series of shorthands for the intorductory remarks.  This condenses the information to make it fit on a page better.
+Here are the used shortcuts and their meanings:
+
+--- Question Types: ---
+Shortcut         Meaning
+---------------------------------------------------------
+2 (3, 4, etc)    Multiple-part Question
+A                Application Question
+E                Essence Question
+EC               Essence Completion Question
+Q                Quotation Question
+QC               Quotation Completion Question
+S                Statement and Question
+T                Scripture Text Question
+
+--- Answer Types: ---
+Shortcut         Meaning
+---------------------------------------------------------
+2 (3, 4, etc)    Multiple-part Answer
+A                Chapter Analysis Answer
+C                Complete Answer
+
+--- Locations: ---
+Shortcut         Meaning
+---------------------------------------------------------
+2 (3, 4, etc)    The number of consecutive/separate verses
+bk               From a Book
+bks              From Multiple Books
+C                From Consecutive Verses
+ch               From a Chapter
+chs              From multiple Chapters
+S                From Separate Verses
+sec              From a Section
+secs             From Multiple Sections
+
+NOTE: These shortcuts can be combined in different ways depending on the question. For examples:
+Statement and 2 part quotation question -> S2Q
+Give three complete answers -> 3C
+From 3 Separate verses of the section titled "Jesus Loves You." -> 3Ssec
