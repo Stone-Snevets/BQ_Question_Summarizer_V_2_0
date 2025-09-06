@@ -1,0 +1,35 @@
+In compliance with the National Bible Quiz commitee's decision starting in 2025, questions will be formatted as follows:
+
+* Include a header with relevant information.
+* Include page number in the footer.
+* The set number should appear at the beginning of each set, using underlining and/or bolding to make it easy to find.
+* Times New Roman, 11
+* Move the scripture reference to the far left, remove the brackets.
+* Margins .5
+
+Example:
+              
+              [Name of Meet]                                                                           Written by [Name]
+              [Material Covered]                                                                        Edited by [Name]
+              .
+              .
+              .
+              Question number 4 for 20 points. Scripture-Text Question. Give Two Complete Answers. From Romans Chapter 1.
+              From whom did Paul wish the Romans both, quote, "grace and peace"?
+              R 1:7   May God our Father and the Lord Jesus Christ give you grace and peace.
+              .
+              .
+              .
+                                                          [Page Number]
+
+The program is designed to account for some alterations of this formatting; but for better use of this program, keep the following rules in mind:
+1. Make sure you are using a PDF, TXT, or DOCX file
+   -> Note the 'x' at the end of DOCX... a DOC file currently won't work
+   => Other file extensions will be available soon
+2. Be sure the point value of each question is present and correctly identified.
+   -> Example: '10 points'
+3. Ensure the correct introductory remarks are present for each question.
+   -> This may not be easy, but do your best
+4. Make sure the question itself ends with the appropriate punctuation (either a question mark or a period)
+
+Failure to comply with these rules may result in incorrect output or an error.
