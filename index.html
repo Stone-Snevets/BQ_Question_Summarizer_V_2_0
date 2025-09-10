@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>BQ_question_analyzer</title>
+
+    <!-- Recommended meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <!-- PyScript CSS -->
+    <link rel="stylesheet" href="https://pyscript.net/releases/2025.7.3/core.css">
+
+    <!-- This script tag bootstraps PyScript -->
+    <script type="module" src="https://pyscript.net/releases/2025.7.3/core.js"></script>
+
+    <!--- Specifications for a viewing table --->
+    <style>
+        table {
+            border-collapse: collapse;
+            margin-top: 1em;
+            background: #fff;
+        }
+        th, td {
+            border: 1px solid #ccc;
+            padding: 6px 12px;
+            text-align: left;
+        }
+        th {
+            background:#f0f0f0;
+        }
+    </style>
+
+    
+</head>
+<body>
+    <h2 style='text-align:center;'>Teen Bible Quiz</h2>
+    
+    <h3 style='text-align:center;'>Question Summary Program</h3>
+    
+    <p><b>Instructions:</b></p>
+    
+    <pre>1. Wait for the program to load up
+    -> There will be a message in the big black box below letting you know it's ready
+    </pre>
+    
+    <pre>2. Select a file containing official TBQ questions
+    -> Make sure you are inputting a PDF, TXT, or DOCX file
+    -> Click <a href = 'https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Question_Rules.txt' target='_blank'>here</a> for a list of rules the questions should follow
+    -> The program will automatically start running once it receives your file
+    </pre>
+    
+    <pre>3. Once the program has completed you have the option to...
+    -> View the file in your browser
+    -> Download the file as a comma separated file (CSV)
+    --> The downloaded file will appear in your downloads folder 
+    -> The buttons to do these are below the black box
+    </pre>
+
+    <pre>Click <a href = 'https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Shorthand_Key.txt' target='_blank'>here</a> to see what the different outputs mean.</pre>
+    
+    <p></p>
+    <!--- Have user select a file --->
+    <!--- https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_input_type_file --->
+    <label for="input_file">Select a file:</label>
+    <input type="file" id="input_file" name="input_file" accept=".pdf, .txt, .docx">
+
+    <!--- Newline for aesthetics --->
+    <p></p>
+
+    <!--- Begin the Pyscript script --->
+    <script type="py" src="./main.py" config="./pyscript.toml" terminal></script>
+
+    <p></p>
+
+    <!--- Create a button for the user to simply VIEW the output CSV file --->
+    <button id='view_button'>View Output</button>
+
+    <p></p>
+
+    <!--- Createa a button for the user to DOWNLOAD the output CSV file --->
+    <button id='download_button'>Download Output (CSV)</button>
+
+    <pre id='dump'></pre>
+    <div id='output'></div>
+
+    <p style='text-align:center;'><small>DISCLAIMER: This is still a prototype.  Please report any bugs / issues to <a href='mailto:funnyquestions4jbq@gmail.com'>Solomon Stevens</a></small></p>
+    <p></p>
+</body>
+</html>
