@@ -12,7 +12,7 @@ packages = ["pandas", "PyPDF2", "python-docx"]
 # Fetch arbitrary content from URLs onto the virtual filesystem, just map a valid
 # URL to a destination in the filesystem path
 [files]
-"https://layne_maple_r3.pyscriptapps.com/bq-question-analyzer/latest/a_GetFileContents.py" = "a_GetFileContents.py"
-"https://layne_maple_r3.pyscriptapps.com/bq-question-analyzer/latest/b_SummarizeQuestions.py" = "b_SummarizeQuestions.py"
-"https://layne_maple_r3.pyscriptapps.com/bq-question-analyzer/latest/c_AddQuestionNotes.py" = "c_AddQuestionNotes.py"
-"https://layne_maple_r3.pyscriptapps.com/bq-question-analyzer/latest/d_AddConcordance.py" = "d_AddConcordance.py"
+"./a_GetFileContents.py" = "a_GetFileContents.py"
+"./b_SummarizeQuestions.py" = "b_SummarizeQuestions.py"
+"./c_AddQuestionNotes.py" = "c_AddQuestionNotes.py"
+"./d_AddConcordance.py" = "d_AddConcordance.py"
