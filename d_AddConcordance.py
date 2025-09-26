@@ -4,7 +4,7 @@ def add_conc(output_file):
     import re
 
     # Notify the user that we are now adding in concordance parts
-    print('\n*Checking for concordance questions')
+    print('\n* Checking for concordance questions')
 
     # Open the file we've received
     with open(output_file, 'r') as file_contents:
@@ -30,12 +30,20 @@ def add_conc(output_file):
         #-> Nouns
         #-> Of phrases - from separate/consecutive verses
         #-> True/happened - from separate verses
-        list = df.loc[(df['Notes'].str.contains('concordance', case = False)) |
-                        (((df['Location'].str.contains('S|C|secs|chs|bks', case = True)) |
-                         (df['Ans_Reference'].str.contains(r':[\w\s]+:'))) &
-                        (df['Notes'].str.contains('"of" phrase|Adjective'))) |
-                        ((df['Location'].str.contains('S|secs|chs|bks', case = True)) &
-                        (df['Notes'].str.contains('A words of|About|According|Describe|did what|How does|Conditional|Mentioned|what is true')))]
+        list = df.loc[
+                        (df['Notes'].str.contains('concordance', case = False)) |
+                        (
+                            (
+                                (df['Location'].str.contains('S|C|secs|chs|bks', case = True)) |
+                                (df['Ans_Reference'].str.contains(r':[\w\s]+:'))
+                            ) &
+                            (df['Notes'].str.contains('"of" phrase|Adjective'))
+                        ) |
+                        (
+                            (df['Location'].str.contains('S|secs|chs|bks', case = True)) &
+                            (df['Notes'].str.contains('A words of|About|According|Describe|did what|How does|Conditional|Mentioned|what is true'))
+                        )
+                    ]
         
         # Find the index of all questions that meet this criteria
         for i in range(len(list)):
