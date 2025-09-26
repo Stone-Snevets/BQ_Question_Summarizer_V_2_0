@@ -173,7 +173,7 @@ def getTheFile():
                     print('Is your file of type PDF, TXT, or DOCX?')
                     return
                     
-            except Exception as ex:
+            except Exception as e:
                 print('EXCEPTION: Failed to open your file')
                 print(e)
                 return
