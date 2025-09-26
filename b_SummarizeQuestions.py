@@ -6,28 +6,34 @@ def split_by_questions(file_contents):
     Returns a list containing each question
     
     """
-    # Imports
-    import re    # For dividing the contents of the file by question using regular expressions
+    try: 
+        # Imports
+        import re    # For dividing the contents of the file by question using regular expressions
+        
+        # Split the string by question
+        #-> Split the string keeping the delimiter of "...# points"
+        #--> Keep the delimiter by putting in parenthesis (grouping it)
+        split_str = re.split(r'(Question [\w\s]+ \d+ points|\d+ points)', file_contents)
     
-    # Split the string by question
-    #-> Split the string keeping the delimiter of "...# points"
-    #--> Keep the delimiter by putting in parenthesis (grouping it)
-    split_str = re.split(r'(Question [\w\s]+ \d+ points|\d+ points)', file_contents)
-
-    #-> Create a blank list to store the questions into
-    question_list = []
-
-    #-> Iterate through each ODD index of the list
-    #--> When keeping the delimiter, split() will put it in the second element of the list (index:1) even if it starts the string
-    for i in range(1, len(split_str)-1, 2):
-        # Combine this index and the next one to get our question
-        question_list.append(split_str[i]+split_str[i+1])
-
-    # Return the completed list
-    return question_list
+        #-> Create a blank list to store the questions into
+        question_list = []
+    
+        #-> Iterate through each ODD index of the list
+        #--> When keeping the delimiter, split() will put it in the second element of the list (index:1) even if it starts the string
+        for i in range(1, len(split_str)-1, 2):
+            # Combine this index and the next one to get our question
+            question_list.append(split_str[i]+split_str[i+1])
+    
+        # Return the completed list
+        return question_list
+        
+    except Exception as e:
+        print('-> Issue with separating out each question from the file')
+        print('->', e)
+        return []
         
 
-def get_question_part(question):
+def get_question_part(question, set_num, question_num):
     """
     Function to retrieve the question part of the introductory remarks.
     The function looks for the following types of introductory remarks:
@@ -48,7 +54,7 @@ def get_question_part(question):
         import re     # For finding what type of intros are being used
     
         # Grab only the question introductory remark part of the question
-        q_intro = re.search(r'points\.\s([\s\S]+question\s*\.)', question).group(1)
+        q_intro = re.search(r'points\.\s([^.]+question\s*\.)', question).group(1)
         
         # Create an output variable to append things to
         q_shorthand = ''
@@ -86,11 +92,12 @@ def get_question_part(question):
         # Return the question intro's shorthand
         return q_shorthand
     except Exception as e:
-        print('QUESTION ISSUE:', e)
-        return 'DAVE'
+        print(f'-> Set {set_num} Question {question_num}: QUESTION ISSUE')
+        print('->', e)
+        return 'QUESTION ISSUE'
 
 
-def get_answer_part(question, q_intro):
+def get_answer_part(question, q_intro, set_num, question_num):
     """
     Function to retrieve the answer part of the introductory remarks.
     The function looks for the following type of introductory remarks:
@@ -107,7 +114,7 @@ def get_answer_part(question, q_intro):
     
         # Grab only the answer introductory part of this question
         #-> If the question introductory part is blank, search for "points..."
-        if q_intro == '_':
+        if re.search(r'question\s*\.\s[\w\s]+answers?\.', question) == None:
             a_intro = re.search(r'points\.\s([\s\S]+answers?\.)', question).group(1)
         #-> If the question introductory part exists, search for "question..."
         else:
@@ -132,11 +139,12 @@ def get_answer_part(question, q_intro):
         # Return the shorthand string
         return a_shorthand
     except Exception as e:
-        print('ANSWER ISSUE:', e)
-        return 'DAVE'
+        print(f'-> Set {set_num} Question {question_num}: ANSWER ISSUE')
+        print('->', e)
+        return 'ANSWER ISSUE'
         
 
-def get_location(question):
+def get_location(question, set_num, question_num):
     """
     Function to retrieve where the question is coming from.
     The function looks for the following locations:
@@ -214,8 +222,9 @@ def get_location(question):
         # Return the shorthand
         return loc_shorthand
     except Exception as e:
-        print('LOCATION ISSUE:', e)
-        return 'DAVE'
+        print(f'-> Set {set_num} Question {question_num}: LOCATION ISSUE')
+        print('->', e)
+        return 'LOCATION ISSUE'
 
 
 def sort_refs(ans_ref_str):
@@ -226,45 +235,51 @@ def sort_refs(ans_ref_str):
     Returns a string containing the references in order
     
     """
-    # Imports
-    import re
+    try:
+        # Imports
+        import re
+    
+        # Create a blank list for the tuples of book, chapter, and verse
+        list_tuples = []
+    
+        # Create a blank output string
+        output_str = ''
+    
+        # Grab all the books and put them into a list
+        list_books = re.findall(r'(\S+) \d+:\d+', ans_ref_str)
+    
+        # Grab all the chapters and put them into a list
+        list_chapters = re.findall(r'\S+ (\d+):\d+', ans_ref_str)
+    
+        # Grab all the verse references and put them into a list
+        list_verses = re.findall(r'\S+ \d+:(\d+)', ans_ref_str)
+    
+        # Iterate through the lists
+        for i in range(len(list_books)):
+            # Grab the ith book, chapter, and verse and put them into a tuple
+            #-> Cast the chapter and verse numbers to integers
+            list_tuples.append((list_books[i], int(list_chapters[i]), int(list_verses[i])))
+            
+    
+        # Sort through the list of tuples by the chapter and then the verse
+        sorted_list_tuples = sorted(list_tuples, key = lambda x:(x[1], x[2]))
+    
+        # For each tuple in the sorted list
+        for bk, ch, vs in sorted_list_tuples:
+    
+            # Send the book, chapter, and reference to a string
+            ref_str = f'{bk} {ch}:{vs} '
+    
+            # Append that to the output string
+            output_str += ref_str
+    
+        # Return a string of the references in order
+        return output_str
 
-    # Create a blank list for the tuples of book, chapter, and verse
-    list_tuples = []
-
-    # Create a blank output string
-    output_str = ''
-
-    # Grab all the books and put them into a list
-    list_books = re.findall(r'(\S+) \d+:\d+', ans_ref_str)
-
-    # Grab all the chapters and put them into a list
-    list_chapters = re.findall(r'\S+ (\d+):\d+', ans_ref_str)
-
-    # Grab all the verse references and put them into a list
-    list_verses = re.findall(r'\S+ \d+:(\d+)', ans_ref_str)
-
-    # Iterate through the lists
-    for i in range(len(list_books)):
-        # Grab the ith book, chapter, and verse and put them into a tuple
-        #-> Cast the chapter and verse numbers to integers
-        list_tuples.append((list_books[i], int(list_chapters[i]), int(list_verses[i])))
-        
-
-    # Sort through the list of tuples by the chapter and then the verse
-    sorted_list_tuples = sorted(list_tuples, key = lambda x:(x[1], x[2]))
-
-    # For each tuple in the sorted list
-    for bk, ch, vs in sorted_list_tuples:
-
-        # Send the book, chapter, and reference to a string
-        ref_str = f'{bk} {ch}:{vs} '
-
-        # Append that to the output string
-        output_str += ref_str
-
-    # Return a string of the references in order
-    return output_str
+    except Exception as e:
+        print('-> Issue with sorting references')
+        print('->', e)
+        return 'SORTING REFERENCE ISSUE'
 
 def create_refs(ans_ref_str):
     """
@@ -275,30 +290,36 @@ def create_refs(ans_ref_str):
     Returns a string containing all the unique references
     
     """
-    # Imports
-    import re
+    try:
+        # Imports
+        import re
+    
+        # Create a blank output string
+        output_str = ''
+    
+        # Grab the book, chapter, first reference listed, and last reference listed
+        #-> Create groups for each thing we are trying to find
+        grouped_ans_ref_str = re.search(r'(\S+) (\d+):(\d+)-(\d+)', ans_ref_str)
+        #-> Assign each group to it's proper variable
+        #--> Cast the references to integers
+        book = grouped_ans_ref_str.group(1)
+        chapter = grouped_ans_ref_str.group(2)
+        first_ref = int(grouped_ans_ref_str.group(3))
+        last_ref = int(grouped_ans_ref_str.group(4))
+    
+        # For each refernce between the first and last reference listed (inclusive)
+        for i in range(last_ref-first_ref):
+            # Create a string of that reference
+            # Send that string to the output string
+            output_str += f'{book} {chapter}:{i+first_ref} '
+    
+        # Return the output string
+        return output_str
 
-    # Create a blank output string
-    output_str = ''
-
-    # Grab the book, chapter, first reference listed, and last reference listed
-    #-> Create groups for each thing we are trying to find
-    grouped_ans_ref_str = re.search(r'(\S+) (\d+):(\d+)-(\d+)', ans_ref_str)
-    #-> Assign each group to it's proper variable
-    #--> Cast the references to integers
-    book = grouped_ans_ref_str.group(1)
-    chapter = grouped_ans_ref_str.group(2)
-    first_ref = int(grouped_ans_ref_str.group(3))
-    last_ref = int(grouped_ans_ref_str.group(4))
-
-    # For each refernce between the first and last reference listed (inclusive)
-    for i in range(last_ref-first_ref):
-        # Create a string of that reference
-        # Send that string to the output string
-        output_str += f'{book} {chapter}:{i+first_ref} '
-
-    # Return the output string
-    return output_str
+    except Exception as e:
+        print('-> Issue with separating out references')
+        print('->', e)
+        return 'SEPARATING REFERENCES ISSUE'
     
 def summarize(file_contents):
     """
@@ -353,9 +374,17 @@ def summarize(file_contents):
             # Check for a question number
             #-> Look for an integer before the point value
             question_num_index = re.search(r'(\d+)', list_of_questions[i][:pt_val_index.start()])
-            #-> If it's there, grab it and cast it to an integer
+            #-> If it's there...
             if question_num_index != None:
+                # Send what it currently holds into a variable
+                previous_question_num = question_num
+                # Grab the new question number from the search and cast it to an integer
                 question_num = int(question_num_index.group(1))
+                # Check if the number is the next sequential number
+                if (question_num != previous_question_num + 1) & (question_num != 1):
+                    # Notify the user that we may have skipped a question
+                    print(f'-> Set {set_num} Question {question_num-1} may have been skipped.')
+                    print('-> Make sure that the point value ("# points") is present and correctly spelled')
             #-> If the question number doesn't exist, simply increment the question_num variable
             else:
                 question_num += 1
@@ -366,12 +395,13 @@ def summarize(file_contents):
             if question_num == 1:
                 set_num += 1
                 print(f'* Processing set {set_num}')
+                
             try:
                 # Determine if there is a question introductory remark
                 #-> If yes...
                 if re.search(r'question\s*\.', list_of_questions[i]) != None:
                     # Call get_question_part()
-                    question_part = get_question_part(list_of_questions[i])
+                    question_part = get_question_part(list_of_questions[i], set_num, question_num)
                     # Set the question_start index to the end of this search
                     question_starts = re.search(r'question\s*\.', list_of_questions[i]).end()
                 #-> If not, move on
@@ -383,7 +413,7 @@ def summarize(file_contents):
                 #-> If yes...
                 if re.search(r'answers?\.', list_of_questions[i]) != None:
                     # Call get_answer_part()
-                    answer_part = get_answer_part(list_of_questions[i], question_part)
+                    answer_part = get_answer_part(list_of_questions[i], question_part, set_num, question_num)
                     # Set the question_start index to the end of this search
                     question_starts = re.search(r'answers?\.', list_of_questions[i]).end()
                 #-> If not, move on
@@ -395,7 +425,7 @@ def summarize(file_contents):
                 #-> If yes...
                 if re.search(r'\.\s+From', list_of_questions[i]) != None:
                     # Call get_location()
-                    location = get_location(list_of_questions[i])
+                    location = get_location(list_of_questions[i], set_num, question_num)
                     # Set the question_start index to the end of this search
                     question_starts = re.search(r'\.\s+From[^.]+\.', list_of_questions[i]).end()
                 #-> If not, move on
@@ -427,7 +457,6 @@ def summarize(file_contents):
                 #-> Check if there are multiple references separated by a dash (e.g. Acts 2:23-25)
                 if re.search('-', ans_str) != None:
                     # If so, call create_refs()
-                    print(f'Set {set_num} Question {question_num}: Calling create_refs()')
                     ans_str = create_refs(ans_str)
                     
                 # Get the actual question
@@ -447,3 +476,7 @@ def summarize(file_contents):
 
     # Send the output file to add_conc()
     addConc.add_conc(FILE_TO_WRITE_TO)
+
+    # Notify the user that the program is complete
+    print()
+    print('--- Program Complete ---')
