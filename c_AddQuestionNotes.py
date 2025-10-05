@@ -34,8 +34,9 @@ def add_notes(output_file):
     > of - Questions that ask the quizzer to complete / begin an 'of' phrase
     > ref of sec - Questions that ask for the references of a section
     > respond - Questions that ask how someone responded to either Chapter Analysis or some other event
+    > sec name - Questions that ask the quizzer to give the verse from which the section title gets its name
     > short sec - Questions asking the quizzer to give an entire section that is short enough to say in 30 seconds
-    > std - Questions that ask the quizzer to say a verse given the reference
+    > std - Questions that ask the quizzer to say a verse given the reference... whether by book, chapter, or section
     > true / happened - Questions that contain with the phrase 'what is true' / 'what happened'
     > unique word - Questions that give the quizzer a word mentioned only once in the material being studied
     > UWS - Quotation Completion / Essence Completion questions
@@ -78,8 +79,11 @@ def add_notes(output_file):
     OF = '"of" phrase'
     REF_OF_SEC = 'References of section'
     RESPOND = 'Respond to ___'
+    SEC_NAME = 'Give verse from which section gets name'
     SHORT_SEC = 'Short Section'
-    STD = 'Standard quote/essence'
+    STD_BK = 'Standard quote/essence by book'
+    STD_CH = 'Standard quote/essence by chapter'
+    STD_SEC = 'Standard quote/essence by section'
     TRUE_HAPPENED = '___ what is true/what happened'
     UNIQUE_WORD = 'Unique word'
     UWS = 'Quotation/Essence completion question'
@@ -140,7 +144,7 @@ def add_notes(output_file):
                             ) &
                             (
                                 (df['Question'].str.contains('individual|geographical')) &
-                                (df['Question'].str.contains('name'))
+                                (df['Question'].str.contains('name|contain'))
                             ) |
                             (
                                 (df['Question'].str.contains('question|exclamation|estament|parenthetical')) &
@@ -183,6 +187,7 @@ def add_notes(output_file):
             # Search through the actual quesiton to find any concordance-based questions
             #-> #-word Chapter Analysis
             #-> Multiple-verse Chapter Analysis
+            #-> Identical Chapter Analysis
             #-> word/phrase found within multiple Chapter Analysis
             #-> Chapter Analysis found within Chapter Analysis
             #-> Chapter Analysis that is also another type of Chapter Analysis
@@ -190,24 +195,27 @@ def add_notes(output_file):
             #-> Individuals/ geogrphical locations associated with the same verb
             #-> Give the references for a Chapter Analysis
             list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Notes'] != A_CONCERNING) &
-                            (df['Notes'] != A_CH) &
+                            (df['Question'].str.contains(r'reference[\s\w]+named')) |
                             (
-                                (df['Question'].str.contains(r'references|within|contains?|also |spans|multi')) |
-                                (df['Question'].str.contains('word individual|word geographical|word question|word exclamation|word Old Testament|word parenthetical')) |
-                                (df['Question'].str.contains('verse question|verse exclamation|verse Old Testament|verse parenthetical')) |
+                                (df['A_Intro'].str.contains('A', case = True)) &
+                                (df['Notes'] != A_CONCERNING) &
+                                (df['Notes'] != A_CH) &
                                 (
-                                    (df['Question'].str.contains('Concerning|About', case = True)) &
-                                    (df['Notes'].str.contains(A_CONCERNING) == False)
-                                ) |
-                                (
-                                    (df['Question'].str.contains(r'hich \S+ are named')) &
-                                    (df['Question'].str.contains('individual|geographical') == False)
-                                ) |
-                                (
-                                    (df['Location'].str.contains('C|S', case = True)) &
-                                    (df['Question'].str.contains('Who |Where |where', case = True))
+                                    (df['Question'].str.contains(r'identical|within|contains?|also |spans|multi|with the word')) |
+                                    (df['Question'].str.contains('word individual|word geographical|word question|word exclamation|word Old Testament|word parenthetical')) |
+                                    (df['Question'].str.contains('verse question|verse exclamation|verse Old Testament|verse parenthetical')) |
+                                    (
+                                        (df['Question'].str.contains('Concerning|About', case = True)) &
+                                        (df['Notes'].str.contains(A_CONCERNING) == False)
+                                    ) |
+                                    (
+                                        (df['Question'].str.contains(r'hich \S+ are named')) &
+                                        (df['Question'].str.contains('individual|geographical') == False)
+                                    ) |
+                                    (
+                                        (df['Location'].str.contains('C|S', case = True)) &
+                                        (df['Question'].str.contains('Who |Where |where', case = True))
+                                    )
                                 )
                             )
                          ]
@@ -277,7 +285,8 @@ def add_notes(output_file):
             # Search for all questions labeled with the Chapter Analysis introductory remark, then...
             # Check if the question itself contains any of the Chapter Analysis elements
             # Check if the location or the question itself contains 'section', then...
-            # Check if the question is NOT asking from one or more verses
+            # Check if the question is NOT asking from one or more verses, and...
+            # Check if the questions is NOT denoted with A_CONCERNING
             list = df.loc[
                             (df['A_Intro'].str.contains('A', case = True)) &
                             (df['Question'].str.contains('individual|geographical|question|exclamation|estament|parenthetical')) &
@@ -285,7 +294,10 @@ def add_notes(output_file):
                                 (df['Location'].str.contains('sec')) |
                                 (df['Question'].str.contains('section'))
                             ) &
-                            (df['Question'].str.contains('verse') == False)
+                            (
+                                (df['Question'].str.contains('verse') == False) &
+                                (df['Notes'] != A_CONCERNING)
+                            )
                          ]
             # Find the index of all questions that meet this criteria
             for i in range(len(list)):
@@ -381,8 +393,10 @@ def add_notes(output_file):
             # Search for questions that begin with "In *insert reference*", then...
             # Check that the answer is NOT a chapter analysis answer
             list = df.loc[
-                            (df['Question'].str.contains(r'According to \S+ \d+:\d+|According to the \S+ verse|According to verse \d+')) |
-                            (df['Question'].str.contains(r'In \S+ \d+:\d+|In the \S+ verse|In verse \d+')) &
+                            (
+                                (df['Question'].str.contains(r'According to \S+ \d+:\d+|According to the \S+ verse|According to verse \d+')) |
+                                (df['Question'].str.contains(r'In \S+ \d+:\d+|In the \S+ verse|In verse \d+'))
+                            ) &
                             (df['A_Intro'].str.contains('A', case = True) == False)
                          ]
             # Find the index of all questions that meet this criteria
@@ -482,7 +496,7 @@ def add_notes(output_file):
             # Check if the question type is NOT quotation or essence, then...
             # Check if the question is NOT a chapter analysis question, then...
             # Check if the question is NOT an application question
-            # Search for all questions asking for the references of something
+            # Search for all questions asking for the references of something that is not an individual / geographical location
             list = df.loc[
                             (
                                 (
@@ -490,10 +504,13 @@ def add_notes(output_file):
                                     (df['Ans_Reference'].str.contains(r':[\w\s]+:'))
                                 ) &
                                 (df['Q_Intro'].str.contains('Q|E') == False) &
-                                (df['A_Intro'].str.contains('A', case = True) == False) &
+                                (df['Notes'] != A_CONC) &
                                 (df['Q_Intro'].str.contains('A', case = True) == False)
                             ) |
-                            (df['Question'].str.contains('references'))
+                            (
+                                (df['Question'].str.contains('references')) &
+                                (df['Notes'] != A_CONC)
+                            )
                          ]
             # Find the index of all questions that meet this criteria
             for i in range(len(list)):
@@ -552,10 +569,12 @@ def add_notes(output_file):
         try: 
             # --- did what - Questions that contain the phrase 'what did (person) do' or '(person) did what' ---
             # Search for all questions that ask for what a person did, then...
-            # Check that the question is NOT a concordance question
+            # Check that the question is NOT a concordance question, or...
+            # Check that the question is NOT an "according to" question
             list = df.loc[
                             (df['Question'].str.contains(r'what did [\w\s]+ do|\S+ did what|were doing what', case = False)) &
-                            (df['Notes'] != CONC_FV)
+                            (df['Notes'] != CONC_FV) &
+                            (df['Notes'] != ACC)
                          ]
             # Find the index of all questions that meet this criteria
             for i in range(len(list)):
@@ -645,7 +664,7 @@ def add_notes(output_file):
         try:
             # --- of - Questions that ask the quizzer to complete / begin an 'of' phrase ---
             # Search for all questions that ask the quizzer to complete / begin an "of" phrase
-            list = df.loc[df['Question'].str.contains(r'complete the phrase|begin the[\s\S]+ phrase')]
+            list = df.loc[df['Question'].str.contains(r'complete the[\s\S]+ phrase|begin the[\s\S]+ phrase')]
             # Find the index of all questions that meet this criteria
             for i in range(len(list)):
                 index = list.index[i]
@@ -684,6 +703,29 @@ def add_notes(output_file):
         except Exception as e:
             print('-> Issue with adding notes', RESPOND)
             print('->', e)
+
+        try:
+            # --- sec name - Questions that ask the quizzer to give the verse from which the section gets its name
+            # Search for all questions labeled either quotation or essence question, then...
+            # Check to make sure the questions are coming from a section, then...
+            # Check if the question is asking the quizzer to say the verse from which the section gets its name
+            #-> Do this by checking for the words "verse" and "section" in the question
+            list = df.loc[
+                            (
+                                (df['Q_Intro'] == 'Q') |
+                                (df['Q_Intro'] == 'E')
+                            ) &
+                            (df['Location'] == 'sec') &
+                            (df['Question'].str.contains(r'verse[\s\S]+section'))
+                         ]
+            # Find the index of all questions that meet this criteria
+            for i in range(len(list)):
+                index = list.index[i]
+                # Assign the appropriate variable to these questions' 'NOTES' column
+                df.loc[index, 'Notes'] = SEC_NAME
+        except Exception as e:
+            print('-> Issue with adding notes', SEC_NAME)
+            print('->', e)
     
         try:
             # --- short sec - Questions that ask the quizzer to say an entire section that is short enough to say in 30 seconds
@@ -709,10 +751,18 @@ def add_notes(output_file):
             # Find the index of all questions that meet this criteria
             for i in range(len(list)):
                 index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = STD
+                # Check where the question is coming from
+                if 'ch' in df.loc[index, 'Location']:
+                    # If from the chapter, assign STD_CH
+                    df.loc[index, 'Notes'] = STD_CH
+                elif 'sec' in df.loc[index, 'Location']:
+                    # If from a section, assign STD_SEC
+                    df.loc[index, 'Notes'] = STD_SEC
+                else:
+                    # If from a book or from nowhere, assign STD_BK
+                    df.loc[index, 'Notes'] = STD_BK
         except Exception as e:
-            print('-> Issue with adding notes', STD)
+            print('-> Issue with adding notes', STD_CH)
             print('->', e)
     
         try:
