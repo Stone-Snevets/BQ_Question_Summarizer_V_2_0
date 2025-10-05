@@ -13,17 +13,20 @@ def split_by_questions(file_contents):
         # Split the string by question
         #-> Split the string keeping the delimiter of "...# points"
         #--> Keep the delimiter by putting in parenthesis (grouping it)
-        split_str = re.split(r'(Question [\w\s]+ \d+ points|\d+ points)', file_contents)
+        split_str = re.split(r'(Question [\w\s]+ \d+\s*points|\d+\s*points)', file_contents)
     
         #-> Create a blank list to store the questions into
         question_list = []
-    
+
+        print(split_str[0])
+        
         #-> Iterate through each ODD index of the list
         #--> When keeping the delimiter, split() will put it in the second element of the list (index:1) even if it starts the string
         for i in range(1, len(split_str)-1, 2):
             # Combine this index and the next one to get our question
             question_list.append(split_str[i]+split_str[i+1])
-    
+        #for i in range(len(question_list)):
+            #print(f'Index: {i}\n->{question_list[i]}')
         # Return the completed list
         return question_list
         
@@ -114,11 +117,11 @@ def get_answer_part(question, q_intro, set_num, question_num):
     
         # Grab only the answer introductory part of this question
         #-> If the question introductory part is blank, search for "points..."
-        if re.search(r'question\s*\.\s[\w\s]+answers?\.', question) == None:
-            a_intro = re.search(r'points\.\s([\s\S]+answers?\.)', question).group(1)
+        if re.search(r'question\s*\.\s[\w\s]+[Aa]nswers?\.', question) == None:
+            a_intro = re.search(r'points\.\s([\s\S]+[Aa]nswers?\.)', question).group(1)
         #-> If the question introductory part exists, search for "question..."
         else:
-            a_intro = re.search(r'question\s*\.\s([\s\S]+answers?\.)', question).group(1)
+            a_intro = re.search(r'question\s*\.\s([\s\S]+[Aa]nswers?\.)', question).group(1)
             
         # Create an empty string to appened the answers to
         a_shorthand = ''
@@ -362,7 +365,7 @@ def summarize(file_contents):
         for i in range(len(list_of_questions)):
             # Find the point value of this question
             #-> Grab the span where the point value is
-            pt_val_index = re.search(r'(\d+) points\.', list_of_questions[i])
+            pt_val_index = re.search(r'(\d+)\s*points\.', list_of_questions[i])
             #-> The actual point value is being grouped by the parentheses
             #-> Cast it to an integer
             pt_val = int(pt_val_index.group(1))
@@ -411,11 +414,11 @@ def summarize(file_contents):
     
                 # Determine if there is an answer introductory remark
                 #-> If yes...
-                if re.search(r'answers?\.', list_of_questions[i]) != None:
+                if re.search(r'[Aa]nswers?\.', list_of_questions[i]) != None:
                     # Call get_answer_part()
                     answer_part = get_answer_part(list_of_questions[i], question_part, set_num, question_num)
                     # Set the question_start index to the end of this search
-                    question_starts = re.search(r'answers?\.', list_of_questions[i]).end()
+                    question_starts = re.search(r'[Aa]nswers?\.', list_of_questions[i]).end()
                 #-> If not, move on
                 else:
                     answer_part = '_'
