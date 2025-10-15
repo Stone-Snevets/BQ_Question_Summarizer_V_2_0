@@ -482,4 +482,4 @@ def summarize(file_contents):
 
     # Notify the user that the program is complete
     print()
-    print('--- Program Complete ---')
+    print('--- Finished Reading in Questions ---')
