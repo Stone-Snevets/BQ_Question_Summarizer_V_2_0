@@ -1,0 +1,12 @@
+## Version 2.0.3
+Date Added: October 15, 2025
+### Features
+- Changed header version to 2.0.3
+- Program can now read in "RTF" files
+  -> commonly used for generating sets in the question pro software
+- Moved questions that ask "what would be true if..." from "true/happened" to "Conditional "if" statement"
+- Removed Concordance column if all values were non-numeric ('_' or ' ')
+
+### Bug Fixes
+* # word Chapter Analysis wasn't being read in as "A Concordance"
+* "Words of ___" was overwriting "Before/after A"
