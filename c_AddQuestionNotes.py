@@ -143,11 +143,11 @@ def add_notes(output_file):
                                 ) 
                             ) &
                             (
-                                (df['Question'].str.contains('individual|geographical')) &
+                                (df['Question'].str.contains('hich individual|hich geographical|hat individual|hat geographical')) &
                                 (df['Question'].str.contains('name|contain'))
                             ) |
                             (
-                                (df['Question'].str.contains('question|exclamation|estament|parenthetical')) &
+                                (df['Question'].str.contains('hich question|hich exclamation|hich [Oo]ld [Tt]estament|hich parenthetical|hat question|hat exclamation|hat [Oo]ld [Tt]estament|hat parenthetical')) &
                                 (df['Question'].str.contains('contain'))
                             )
                          ]
@@ -601,7 +601,7 @@ def add_notes(output_file):
         try: 
             # --- if - Questions that ask for questions having to do with the word 'if' ---
             # Search for all questions that contain the phrase "conditional "if" statement" or "Under what condition"
-            list = df.loc[df['Question'].str.contains('hich conditional|nder what condition')]
+            list = df.loc[df['Question'].str.contains('hich conditional|nder what condition|hat would be true')]
             # Find the index of all questions that meet this criteria
             for i in range(len(list)):
                 index = list.index[i]
@@ -772,7 +772,7 @@ def add_notes(output_file):
             # Check that the question is NOT a concordance question, then...
             # Check that the question is NOT an application question
             list = df.loc[
-                            (df['Question'].str.contains('what is true|what was true|what would be true|what happened|what will happen|result', case = False)) &
+                            (df['Question'].str.contains('what is true|what was true|what happened|what will happen|result', case = False)) &
                             (df['Notes'] != CONC_FV) &
                             (df['Q_Intro'].str.contains('A', case = True) == False)
                          ]
@@ -844,7 +844,8 @@ def add_notes(output_file):
                             (df['Question'].str.contains(r'what did [\w\s]+ say|what does [\w\s]+ say|\S+ said what|give all the words of \S+|give all [\S\s]+ words', case = False)) &
                             (df['A_Intro'].str.contains('A', case = True) == False) &
                             (df['Question'].str.contains('Concerning|About', case = True) == False) &
-                            (df['Notes'] != ACC)
+                            (df['Notes'] != ACC) &
+                            (df['Notes'] != BEFORE_AFTER_A)                                
                          ]
             # Find the index of all questions that meet this criteria
             for i in range(len(list)):
