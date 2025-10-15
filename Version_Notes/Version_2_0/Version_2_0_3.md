@@ -6,6 +6,7 @@ Date Added: October 15, 2025
   -> commonly used for generating sets in the question pro software
 - Moved questions that ask "what would be true if..." from "true/happened" to "Conditional "if" statement"
 - Removed Concordance column if all values were non-numeric ('_' or ' ')
+- Changed message to notify user the program is done
 
 ### Bug Fixes
 * # word Chapter Analysis wasn't being read in as "A Concordance"
