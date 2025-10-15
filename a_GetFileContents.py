@@ -1,6 +1,6 @@
 """
 Script to:
-1. Ask the user for a file (PDF, DOCX, TXT)
+1. Ask the user for a file (PDF, DOCX, TXT, RTF)
 2. Extract the text from that file for further investigation
 3. Call 'b_SummarizeQuestions' to do the investigation
 
@@ -82,7 +82,7 @@ def download_file(event = None):
 def getTheFile():
     """
     Function to:
-    1. Ask the user for a file (PDF, DOCX, TXT)
+    1. Ask the user for a file (PDF, DOCX, TXT, RTF)
     2. Extract the text from that file
     3. Call 'b_SummarizeQuestions' to begin investigation of that file
     
@@ -116,7 +116,7 @@ def getTheFile():
         def on_load(e):
             """
             Function to:
-            1. Send the file to the appropriate file decoder (PDF, DOCX, TXT)
+            1. Send the file to the appropriate file decoder (PDF, DOCX, TXT, RTF)
             2. Call 'b_SummarizeQuestions' sending the files' contents
             
             """
@@ -167,10 +167,20 @@ def getTheFile():
                     #-> Call 'b_SummarizeQuestions' sending that variable
                     summarize.summarize(text)
 
+                # If not, check if the file is of type RTF
+                elif filename.endswith(".rtf"):
+                    # If so:
+                    #-> Import rtf_to_text from the "striprtf" library to decode the file's contents
+                    from striprtf.striprtf import rtf_to_text
+                    #-> Read in the decoded contents from the file
+                    text = rtf_to_text(data.read().decode('utf-8', errors = 'ignore'))
+                    # Call 'b_SummarizeQuestions' sending in that variable
+                    summarize.summarize(text)
+
                 # If the file type is none of the above, return
                 else:
                     print('ERROR: File not acceptable')
-                    print('Is your file of type PDF, TXT, or DOCX?')
+                    print('Is your file of type PDF, TXT, RTF, or DOCX?')
                     return
                     
             except Exception as e:
