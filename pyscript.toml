@@ -6,7 +6,7 @@ name = "BQ_question_analyzer"
 #-> io - converting raw input into something we can work with
 #-> js - working with javascript-related files (like html)
 #-> re - regular expressions
-packages = ["pandas", "PyPDF2", "python-docx"]
+packages = ["pandas", "PyPDF2", "python-docx", "striprtf"]
 
 
 # Fetch arbitrary content from URLs onto the virtual filesystem, just map a valid
