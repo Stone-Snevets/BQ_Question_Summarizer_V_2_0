@@ -84,7 +84,8 @@ def add_conc(output_file):
 
         
         # Check if we've had any assignments in the 'Concordance' column
-        if len(df.loc[df['Concordance'] != '']) > 0:
+        # Also check if any assignments aren't the underscore
+        if ((len(df.loc[df['Concordance'] == ''])) + (len(df.loc[df['Concordance'] == '_'])) != (len(df['Concordance']))):
             # If so, assign all indices with an empty 'Concordance' column with the underscore
             #-> Find all empty 'Concordance' columns
             list = df.loc[df['Concordance'] == '']
