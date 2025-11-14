@@ -14,6 +14,8 @@
     <script type="module" src="https://pyscript.net/releases/2025.7.3/core.js"></script>
 
     <!--- Specifications for a viewing table --->
+    <!--  > For the actual table -->
+    <!--  > For the table's contents -->
     <style>
         table {
             border-collapse: collapse;
@@ -31,11 +33,36 @@
     </style>
 
     
+    <!--- Specifications for pivot tables --->
+    <!--  > For the output variable -->
+    <!--  > For the pivot tables -->
+    <!--  > For the contents of the pivot tables -->
+    <style>
+        # output_pivot {
+            margin-top: 1.5rem;
+        }
+        .pivot-table {
+            margin-top: 1.0rem;
+            margin-bottom: 2.0rem;
+            border-collapse: collapse;
+        }
+        .pivot-table th, .pivot-table td {
+            border: 1px solid #ccc;
+            padding: 6px 10px;
+            text-align: center;
+        }
+        .pivot-title {
+            font-weight: bold;
+            margin-top: 2rem;
+            margin-bottom: 0.5rem;
+        }
+    </style>
+
 </head>
 <body>
     <h2 style='text-align:center;'>Teen Bible Quiz</h2>
     
-    <h3 style='text-align:center;'>Question Summary Program<br><small><a href = 'https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Version_Notes/Version_2_0/Version_2_0_3.md' target = 'blank'>Version 2.0.3</a></small></h3>
+    <h3 style='text-align:center;'>Question Summary Program<br><small><a href = 'https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Version_Notes/Version_2_1/Version_2_1_0.md' target = 'blank'>Version 2.1.0</a></small></h3>
 
     <p><b>Instructions:</b></p>
     
@@ -44,14 +71,18 @@
     </pre>
     
     <pre>2. Select a file containing official TBQ questions
-    -> Make sure you are inputting a PDF, TXT, or DOCX file
+    -> Make sure you are inputting a PDF, TXT, DOCX, or RTF file
     -> Click <a href = 'https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Question_Rules.txt' target='_blank'>here</a> for a list of rules the questions should follow
     -> The program will automatically start running once it receives your file
     </pre>
     
     <pre>3. Once the program has completed you have the option to...
-    -> View the file in your browser
-    -> Download the file as a comma separated file (CSV)
+    -> View the output in your browser
+    -> View tables summarizing the output in different ways
+       --> Frequency of each Note
+       --> Frequency of each part answer for Concordance-based questions (if applicable)
+       --> Frequency of each type of Chapter Analysis related question
+    -> Download the output as a comma separated file (CSV)
        --> The downloaded file will appear in your downloads folder 
     -> The buttons to do these are below the black box
     </pre>
@@ -80,8 +111,14 @@
     <!--- Createa a button for the user to DOWNLOAD the output CSV file --->
     <button id='download_button'>Download Output (CSV)</button>
 
+    <p></p>
+
+    <!--- Create a button for the user to view SUMMARY TABLES of what the program found --->
+    <button id='view_pivot_button'>View Summary Tables</button>
+
     <pre id='dump'></pre>
     <div id='output'></div>
+    <div id='output_pivot'></div>
 
     <p style='text-align:center;'><small>DISCLAIMER: This program may contain bugs and problems.  Please report any issues you find to <a href='mailto:funnyquestions4jbq@gmail.com'>Solomon Stevens</a></small></p>
     <p></p>
