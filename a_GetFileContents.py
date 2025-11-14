@@ -16,7 +16,7 @@ def view_file(event = None):
     Returns nothing
     
     """
-    print('VIEWING FILE')
+    print('Viewing File')
     # Imports
     import js 
     import csv
@@ -50,7 +50,7 @@ def view_file(event = None):
     except FileNotFoundError:
         output_box.innerHTML = "<p>⚠️ No CSV file found. Please enter a question file to search first.</p>"
 
-
+# Function to have user DOWNLOAD the CSV file
 def download_file(event = None):
     """
     Function to give the user the option to download the output CSV file
@@ -77,6 +77,109 @@ def download_file(event = None):
         link.click()
     except FileNotFoundError:
         js.alert("⚠️ No CSV file found. Please enter a question file to search first.")
+
+# Function to have the user VIEW the SUMMARY TABLES of the CSV file
+def view_summary_tables(event = None):
+    """
+    Function to allow user to see a numerical summary of the program's output
+    -> Totals of each assigned note
+    -> Totals of each part answer for concordance questions (if applicable)
+    -> Totals of each type of Chapter Analysis question
+
+    Returns nothing
+    
+    """
+    print('Viewing Summary Tables')
+    # Imports
+    import js
+    import pandas as pd
+
+    # Constants
+    OUTPUT_FILE = 'OutputCSV.csv'
+
+    try:
+        # Create a blank output variable
+        output_findings = ''
+    
+        # Open the File
+        with open(OUTPUT_FILE, 'r') as file_contents:
+            # Create a dataframe containing the file's contents
+            df = pd.read_csv(file_contents, encoding = 'latin')
+    
+            # Generate Pivot Tables
+            # --- Frequency of each assigned note ---
+            pivot_notes = pd.pivot_table(df, index = 'Notes', aggfunc = 'count', values = 'Pt_Val')
+            #-> Sort the values by the number of times a note occurs (greatest to least)
+            pivot_notes = pivot_notes.sort_values(by=['Pt_Val'], ascending = False)
+            #-> Rename any columns that need renaming
+            pivot_notes.columns = ['Total']
+            #-> Reset the index so it's in the same row as the column headers
+            pivot_notes = pivot_notes.reset_index()
+            #-> Concatinate a title to the output variable as a <div>
+            output_findings += '<div class="pivot-title">Frequency of Each Note</div>'
+            #-> Concatinate findings to the output variable as a <table>
+            output_findings += pivot_notes.to_html(classes = "pivot-table", border = 0, index = False)
+    
+            # --- Frequency of each assigned Concordance question (if applicable) ---
+            #-> Check if there are any concordance questions present
+            if 'Concordance' in df.columns:
+                # If so, grab all the concordance questions
+                #-> Any row where the 'Notes' column identifies a concordance, or...
+                #-> Any row where the 'Concordance' column has a number in the row
+                df_conc = df.loc[
+                                    (df['Notes'].str.contains('oncordance')) |
+                                    (df['Concordance'].str.contains(r'\d'))
+                                ]
+                # Create a pivot table - counting the number of part answers each concordance value has
+                pivot_conc = pd.pivot_table(df_conc, index = 'Concordance', aggfunc = 'count', values = 'Pt_Val')
+                # Sort the values by the number of times a concordance question occurs (greatest to least)
+                pivot_conc = pivot_conc.sort_values(by = ['Pt_Val'], ascending = False)
+                # Create a row containing the total sum of the concordance questions
+                #-> 'axis = 0' sums each column
+                total_conc = pivot_conc.sum(axis = 0)
+                total_conc.name = '=== Grand Total ==='
+                # Concatinate the total row to the Concordance pivot table
+                pivot_conc = pd.concat([pivot_conc, pd.DataFrame([total_conc])])
+                # Reset the index so it's in the same row as the column headers
+                pivot_conc = pivot_conc.reset_index()
+                # Rename any columns that need renaming
+                pivot_conc.columns = ['Concordance Part Answer', 'Total']
+                # Concatinate a title to the output variable as a <div>
+                output_findings += '<div class="pivot-title">Frequency of Each Concordance Part Answer</div>'
+                # Concatinate findings to the output variable as a <table>
+                output_findings += pivot_conc.to_html(classes = "pivot-table", border = 0, index = False)
+            # If not, move on. There is no concordance to summarize
+                
+            # --- Frequency of each type of Chapter Analysis question ---
+            # Check if there exists any Chapter Analysis questions
+            if (df['A_Intro'].str.contains('A', case = True)).any():
+                # If so, Grab all the chapter Analysis questions
+                df_A = df.loc[df['A_Intro'].str.contains('A')]
+                # Create a pivot table tallying each type of Chapter Analysis question
+                pivot_A = pd.pivot_table(df_A, index = 'Notes', aggfunc = 'count', values = 'Pt_Val')
+                # Sort the values by the number of times a note occurs (greatest to least)
+                pivot_A = pivot_A.sort_values(by = ['Pt_Val'], ascending = False)
+                # Create a row containing the total number of Chapter Analysis related questions
+                # 'axis = 0' sums each column
+                total_A = pivot_A.sum(axis = 0)
+                total_A.name = '=== Grand Total ==='
+                # Concatinate the total row to the Chapter Analysis pivot table
+                pivot_A = pd.concat([pivot_A, pd.DataFrame([total_A])])
+                # Reset the index so it's in the same row as the column headers
+                pivot_A = pivot_A.reset_index()
+                # Rename any columns that need renaming
+                pivot_A.columns = ['Type of Chapter Analysis', 'Total']
+                # Concatinate a title to the output variable as a <div>
+                output_findings += '<div class = "pivot-title">Frequency of Each Chapter Analysis Answer</div>'
+                # Concatinate findings to the output variable as a <table>
+                output_findings += pivot_A.to_html(classes = "pivot-table", border = 0, index = False)
+            # If not, more on. There are no Chapter Analysis questions to summarize
+    
+            # Render all the pivot tables to the html
+            js.document.getElementById('output_pivot').innerHTML = output_findings
+            
+    except FileNotFoundError:
+        js.document.getElementById('output_pivot').innerHTML = "<p>⚠️ No file found. Please enter a question file to search first.</p>"
 
 # Function being called by 'main.py'
 def getTheFile():
@@ -200,3 +303,5 @@ def getTheFile():
     document.getElementById('view_button').addEventListener('click', create_proxy(view_file))
     # Add an event listener that will wait for the user to choose to download the CSV file
     document.getElementById('download_button').addEventListener('click', create_proxy(download_file))
+    # Add an event listener that will wait for the user to choose to view the summary tables
+    document.getElementById('view_pivot_button').addEventListener('click', create_proxy(view_summary_tables))
