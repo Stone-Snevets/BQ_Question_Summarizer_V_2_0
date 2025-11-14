@@ -120,7 +120,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_BEFORE_AFTER_A
         except Exception as e:
             print('-> Issue with adding notes', A_BEFORE_AFTER_A)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
 
         try:
             # --- A ch - Questions that ask for Chapter Analysis from a chapter ---
@@ -157,7 +160,10 @@ def add_notes(output_file):
                 # Assign the appropriate variable to these questions' 'NOTES' column
                 df.loc[index, 'Notes'] = A_CH
         except Exception as e:
-                print('-> Issue with adding notes', A_CH)
+            print('-> Issue with adding notes', A_CH)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
                 print('->', e)
 
         try:
@@ -178,7 +184,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_CONCERNING
         except Exception as e:
             print('-> Issue with adding notes', A_CONCERNING)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:        
             # --- A conc - Questions that ask for separate Chapter Analysis answers that have something in common ---
@@ -226,7 +235,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_CONC
         except Exception as e:
             print('-> Issue with adding notes', A_CONC)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:        
             # --- A fv - Questions that have a Chapter Analysis answer but have a question that comes from a verse ---
@@ -244,7 +256,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_FV
         except Exception as e:
             print('-> Issue with adding notes', A_FV)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- A nth A - Questions that ask for the #th Chapter Analysis in a list of consecutive Chapter Analysis answers
@@ -261,7 +276,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_NTH
         except Exception as e:
             print('-> Issue with adding notes', A_NTH)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
 
         try:
             # --- A OT Ref - Questions that mention the Old Testament reference of an Old Testament Scripture
@@ -278,7 +296,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_OT_REF
         except Exception as e:
             print('-> Issue with adding notes', A_OT_REF)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- A sec - Questions that ask for Chapter Analysis from a section ---
@@ -306,7 +327,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_SEC
         except Exception as e:
             print('-> Issue with adding notes', A_SEC)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- A title - Questions that ask for Chapter Analysis based on a title given to it by the Scripture
@@ -330,7 +354,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_TITLE
         except Exception as e:
             print('-> Issue with adding notes', A_TITLE)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
 
         try:
             # --- A vs - Questions that ask for Chapter Analysis from a verse ---
@@ -351,7 +378,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_VS
         except Exception as e:
             print('-> Issue with adding notes', A_VS)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:        
             # --- A words of - Questions that ask for Chapter Analysis that someone said
@@ -368,7 +398,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = A_WORDS_OF
         except Exception as e:
             print('-> Issue with adding notes', A_WORDS_OF)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try: 
             # --- about - Questions that ask for what someone said about something ---
@@ -385,7 +418,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = ABOUT
         except Exception as e:
             print('-> Issue with adding notes', ABOUT)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- acc - Questions that begin with 'According to *insert reference*' ---
@@ -406,7 +442,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = ACC
         except Exception as e:
             print('-> Issue with adding notes', ACC)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:        
             # --- address - Questions that ask for how someone addresses someone else
@@ -424,7 +463,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = ADDRESS
         except Exception as e:
             print('-> Issue with adding notes', ADDRESS)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:  
             # --- Adj - Questions that ask for what a given adjective describes ---
@@ -445,7 +487,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = ADJ
         except Exception as e:
             print('-> Issue with adding notes', ADJ)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- app - Application questions ---
@@ -458,7 +503,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = APP
         except Exception as e:
             print('-> Issue with adding notes', APP)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- before / after A - Questions that ask for the words of someone before / after Chapter Analysis ---
@@ -475,7 +523,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = BEFORE_AFTER_A
         except Exception as e:
             print('-> Issue with adding notes', BEFORE_AFTER_A)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- besides - Questions that ask for a list of answers besides one of them ---
@@ -488,7 +539,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = BESIDES
         except Exception as e:
             print('-> Issue with adding notes', BESIDES)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- conc fv - Questions that require answers from different verses that have something in common ---
@@ -505,7 +559,7 @@ def add_notes(output_file):
                                 ) &
                                 (df['Q_Intro'].str.contains('Q|E') == False) &
                                 (df['Notes'] != A_CONC) &
-                                (df['Q_Intro'].str.contains('A', case = True) == False)
+                                (df['A_Intro'].str.contains('A', case = True) == False)
                             ) |
                             (
                                 (df['Question'].str.contains('references')) &
@@ -519,7 +573,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = CONC_FV
         except Exception as e:
             print('-> Issue with adding notes', CONC_FV)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
                 
         try:
             # --- conc QE - Questions that ask quizzers to say verses with something in common ---
@@ -538,7 +595,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = CONC_QE
         except Exception as e:
             print('-> Issue with adding notes', CONC_QE)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- convo - Questions asking for a conversation between two people / groups of people ---
@@ -551,7 +611,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = CONVO
         except Exception as e:
             print('-> Issue with adding notes', CONVO)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:        
             # --- desc - Questions that begin with the word 'Describe' ---
@@ -564,7 +627,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = DESC
         except Exception as e:
             print('-> Issue with adding notes', DESC)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try: 
             # --- did what - Questions that contain the phrase 'what did (person) do' or '(person) did what' ---
@@ -583,7 +649,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = DID_WHAT
         except Exception as e:
             print('-> Issue with adding notes', DID_WHAT)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try: 
             # --- hd - Questions that begin with 'How does verse #' or 'How do verses #...' or 'How does the #th verse' or 'How do(es) the opening/closing verse(s)' ---
@@ -596,7 +665,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = HD
         except Exception as e:
             print('-> Issue with adding notes', HD)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try: 
             # --- if - Questions that ask for questions having to do with the word 'if' ---
@@ -609,7 +681,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = IF_STMNT
         except Exception as e:
             print('-> Issue with adding notes', IF_STMNT)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- mentioned - Questions that end with the word 'mentioned' or 'named' ---
@@ -617,7 +692,7 @@ def add_notes(output_file):
             # Check if the question is NOT Chapter Analysis, then...
             # Check if the question is NOT a concordance question
             list = df.loc[
-                            (df['Question'].str.contains(r'mentioned\?|named\?')) &
+                            (df['Question'].str.contains(r'mentioned\?|mention\?|named\?|name\?')) &
                             (df['A_Intro'].str.contains('A') == False) &
                             (df['Notes'] != CONC_FV)
                          ]
@@ -628,7 +703,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = MENTIONED
         except Exception as e:
             print('-> Issue with adding notes', MENTIONED)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- not mentioned - Questions that ask for something as if to ask "which ___ is mentioned", but it doesn't inculde mentioned
@@ -646,7 +724,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = NOT_MENTIONED
         except Exception as e:
             print('-> Issue with adding notes', NOT_MENTIONED)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:        
             # --- noun - Questions that ask for the chapters in which a noun / verb is contained ---
@@ -659,7 +740,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = NOUN
         except Exception as e:
             print('-> Issue with adding notes', NOUN)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- of - Questions that ask the quizzer to complete / begin an 'of' phrase ---
@@ -672,7 +756,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = OF
         except Exception as e:
             print('-> Issue with adding notes', OF)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:        
             # --- ref of sec - Questions that ask for the references of a section ---
@@ -689,7 +776,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = REF_OF_SEC
         except Exception as e:
             print('-> Issue with adding notes', REF_OF_SEC)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- respond - Questions that ask how someone responded to either Chapter Analysis or some other event ---
@@ -702,7 +792,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = RESPOND
         except Exception as e:
             print('-> Issue with adding notes', RESPOND)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
 
         try:
             # --- sec name - Questions that ask the quizzer to give the verse from which the section gets its name
@@ -725,7 +818,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = SEC_NAME
         except Exception as e:
             print('-> Issue with adding notes', SEC_NAME)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- short sec - Questions that ask the quizzer to say an entire section that is short enough to say in 30 seconds
@@ -738,7 +834,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = SHORT_SEC
         except Exception as e:
             print('-> Issue with adding notes', SHORT_SEC)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- std - Questions that ask the quizzer to say a verse given the reference ---
@@ -763,7 +862,10 @@ def add_notes(output_file):
                     df.loc[index, 'Notes'] = STD_BK
         except Exception as e:
             print('-> Issue with adding notes', STD_CH)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- true / happened - Questions that contain with the phrase 'what is/was true' / 'what happened/will happen' ---
@@ -783,12 +885,15 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = TRUE_HAPPENED
         except Exception as e:
             print('-> Issue with adding notes', TRUE_HAPPENED)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:        
             # --- unique word - Questions that give the quizzer a word mentioned only once in the material being studied ---
             # Search for all questions telling the quizzer to identify the verse, reference, or chapter a word is in
-            list = df.loc[df['Question'].str.contains('this verse|this chapter')]
+            list = df.loc[df['Question'].str.contains('this verse|this chapter|unique word')]
             # Find the index of all questions that meet this criteria
             for i in range(len(list)):
                 index = list.index[i]
@@ -796,7 +901,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = UNIQUE_WORD
         except Exception as e:
             print('-> Issue with adding notes', UNIQUE_WORD)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- UWS - Quotation Completion / Essence Completion questions ---
@@ -809,7 +917,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = UWS
         except Exception as e:
             print('-> Issue with adding notes', UWS)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
                 
         try:
             # --- VTGT - Non-Quote / Non-Essence questions with answers coming from consecutive verses ---
@@ -832,7 +943,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = VTGT
         except Exception as e:
             print('-> Issue with adding notes', VTGT)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
     
         try:
             # --- words of - Questions that ask for the words of a person / group of people ---
@@ -854,7 +968,10 @@ def add_notes(output_file):
                 df.loc[index, 'Notes'] = WORDS_OF
         except Exception as e:
             print('-> Issue with adding notes', WORDS_OF)
-            print('->', e)
+            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
+                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
+            else:
+                print('->', e)
 
         
         
