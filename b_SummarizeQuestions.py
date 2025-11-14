@@ -17,8 +17,6 @@ def split_by_questions(file_contents):
     
         #-> Create a blank list to store the questions into
         question_list = []
-
-        print(split_str[0])
         
         #-> Iterate through each ODD index of the list
         #--> When keeping the delimiter, split() will put it in the second element of the list (index:1) even if it starts the string
