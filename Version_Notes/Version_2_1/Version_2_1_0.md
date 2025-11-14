@@ -3,9 +3,9 @@ Date Added: November 14, 2025
 ### Features
 - Changed version to 2.0.1
 - Included option to show summary tables for each of the following (if applicable):
-> Frequency of each time a Note is mentioned
->  Frequency of each part answer a concordance question is
-> Frequency of each type of Chapter Analysis question is asked
+-> Frequency of each time a Note is mentioned
+-> Frequency of each part answer a concordance question is
+-> Frequency of each type of Chapter Analysis question is asked
 - Added custom error message if the question part of a question does not exist
 - Re-worded some of the instructions to make it more clear - differenciated between "output" and "file"
 
