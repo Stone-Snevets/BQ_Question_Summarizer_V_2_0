@@ -432,45 +432,57 @@ def summarize(file_contents):
                 #-> If not, move on
                 else:
                     location = '_'
+
+                # Get the actual question
+                #-> Remove any whitespace from the beginning of the question
+                question_starts = (re.search(r'\s*(\w)', list_of_questions[i][question_starts:]).span(1))[0] + question_starts
+                #-> The question ends approximately where there is a double whitespace indicating a new line or...
+                #-> The question ends approximately where there is a newline
+                #--> It depends on the type of the input file
+                question_ends = re.search(r'\s\s+|\n', list_of_questions[i][question_starts:]).start() + question_starts
+                actual_question = list_of_questions[i][question_starts:question_ends+1]
     
                 # Get all the available referenes for where the answer comes from
                 #-> Group what the reference should contain
                 #-> Cast our findings to a set to remove duplicates
-                #-> Cast that set into a list for better ordering of references
-                ans_ref = set(re.findall(r'[^\w,]\s+\[?(\S+ \d+:\d+\S*)[\s\t]\s*', list_of_questions[i]))
-                #-> If there are more than one reference, call sort_refs() to output them in order
-                #-> Create a string variable for our references
-                ans_str = ''
-                #-> For each reference
-                for ref in ans_ref:
-                    # Check if the "]" character exists in the reference
-                    if re.search(']', ref) != None:
-                        # If it does, get rid of it
-                        ref = re.sub(']', ' ', ref)
-                    # Append each reference to the end of our string
-                    ans_str += ref
-                    # Append a space after each reference
-                    ans_str += ' '
-                #-> Check if there is more than one reference
-                if len(ans_ref) > 1:
-                    # If so, call sort_refs() to ensure the references are in order
-                    ans_str = sort_refs(ans_str)
-                #-> Check if there are multiple references separated by a dash (e.g. Acts 2:23-25)
-                if re.search('-', ans_str) != None:
-                    # If so, call create_refs()
-                    ans_str = create_refs(ans_str)
-                    
-                # Get the actual question
-                #-> Remove any whitespace from the beginning of the question
-                question_starts = (re.search(r'\s*(\w)', list_of_questions[i][question_starts:]).span(1))[0] + question_starts
-                #-> The question ends approximately where the first answer reference is
-                question_ends = re.search(r'[^\w,]\s+\[?\S+ \d+:\d+\S*[\s\t]\s*', list_of_questions[i]).start()
-                actual_question = list_of_questions[i][question_starts:question_ends+1]
-
+                ans_ref = set(re.findall(r'\[*(\S+ \d+:\d+\S*)', list_of_questions[i][question_ends:]))
+                #-> If there is at least one reference
+                if len(ans_ref) > 0:
+                    #-> If there are more than one reference, call sort_refs() to output them in order
+                    #-> Create a string variable for our references
+                    ans_str = ''
+                    #-> For each reference
+                    for ref in ans_ref:
+                        # Check if the "]" character exists in the reference
+                        if re.search(']', ref) != None:
+                            # If it does, get rid of it
+                            ref = re.sub(']', ' ', ref)
+                        # Append each reference to the end of our string
+                        ans_str += ref
+                        # Append a space after each reference
+                        ans_str += ' '
+                    #-> Check if there is more than one reference
+                    if len(ans_ref) > 1:
+                        # If so, call sort_refs() to ensure the references are in order
+                        ans_str = sort_refs(ans_str)
+                    #-> Check if there are multiple references separated by a dash (e.g. Acts 2:23-25)
+                    if re.search('-', ans_str) != None:
+                        # If so, call create_refs()
+                        ans_str = create_refs(ans_str)
+                    #-> Check if the references were supposed to be in the answer
+                    if ',' in ans_str:
+                        # If so, make the answer string blank... all this work was for nothing
+                        ans_str = '_'
+                # If not
+                else:
+                    # Leave the answer reference blank
+                    ans_str = '_'
+                            
                 # Write our question's summary to the output file
                 writer.writerow([set_num, question_num, pt_val, question_part, answer_part, location, actual_question, ans_str])
             except Exception as e:
                 print(f'-> Problem with Set {set_num}: Question {question_num}')
+                print(e)
 
     # Send the output file to add_notes()
     addNotes.add_notes(FILE_TO_WRITE_TO)
