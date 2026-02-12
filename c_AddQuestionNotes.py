@@ -1,28 +1,812 @@
+def note_concordance(df):
+    """
+    Function to add notes to all concordance-related questions
+    -> Takes all questions coming from separate/consecutive verses and...
+    -> Marks them as either:
+        - Give the verses
+        - From the verse context
+        - Consecutive verses that go together
+
+    Returns the dataframe with the notes filled in
+    
+    """
+    # Create constant variables for each note
+    CONC_QE = 'Concordance: Give verses'
+    CONC_FV = 'Concordance: From verse context'
+    VTGT = 'Verses that go together'
+
+    # Begin adding notes
+    # --- Conc QE ---
+    try:
+        # Find all quotation/essence questions
+        sub_df = df.loc[df['Q_Intro'].str.contains('Q|E', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = CONC_QE
+    except Exception as e:
+        print('-> Issue with adding note:', CONC_QE)
+        print('-->', e)
+
+    # --- Conc FV ---
+    try:
+        # Find all the questions that weren't marked by Conc QE
+        sub_df = df.loc[df['Notes'] == '']
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = CONC_FV
+    except Exception as e:
+        print('-> Issue with adding note:', CONC_FV)
+        print('-->', e)
+
+    # --- VTGT ---
+    try:
+        # Find all questions not marked by Conc QE that are coming from consecutive verses
+        sub_df = df.loc[
+                        (df['Notes'] != CONC_QE) &
+                        (df['Location'].str.contains(r'C', case = True, na = False))
+                      ]
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = VTGT
+    except Exception as e:
+        print('-> Issue with adding note:', VTGT)
+        print('-->', e)
+
+    # Return the sub dataframe
+    return df
+
+def note_chapter_analysis(df):
+    """
+    Function to add notes to all questions with Chapter Analysis answers
+    == Questions asking for Concordance-related answers ==
+    > A conc - Questions that ask for separate Chapter Analysis answers that have something in common
+    == Questions with key words in them ==
+    > A before / after A - Questions that ask for Chapter Analysis that comes before / after other Chapter Analysis
+    > A answer A - Questions that ask for a Chapter Analysis that answers another Chapter Analysis
+    > A OT Ref - Questions that mention the Old Testament reference of an Old Testament Scripture
+    > A words of - Questions that ask for Chapter Analysis that someone said
+    > A nth A - Questions that ask for the #th Chapter Analysis in a list_question of consecutive Chapter Analysis answers
+    > A concerning - Questions that ask for Chapter Analysis concerning a key word / phrase
+    > A title - Questions that ask for Chapter Analysis based on a title given to it by the Scripture
+    == Straight up Chapter Analysis grouped by location
+    > A bk - Questions that ask for Chapter Analysis from a book
+    > A ch - Questions that ask for Chapter Analysis from a chapter
+    > A sec - Questions that ask for Chapter Analysis from a section
+    > A vs - Questions that ask for Chapter Analysis from a verse
+    == What's left ==
+    > A fv - Questions that have a Chapter Analysis answer but have a question that comes from a verse context
+    
+
+    Returns the dateframe with the notes filled in
+    
+    """
+    # Create constant variables for each note
+    #-> Questions asking for concordance-related answers
+    A_CONC = 'A: concordance'
+    #-> Questions with key words in them
+    A_BEFORE_AFTER_A = 'A: before/after A'
+    A_ANSWER_A = 'A: answer A'
+    A_OT_REF = 'A: Old Testament Reference'
+    A_WORDS_OF = 'A: words of ___' 
+    A_NTH = 'A: Give the #th chapter analysis'
+    A_CONCERNING = 'A: concerning ___'
+    A_TITLE = 'A: title'
+    #-> Straight up Chapter Analysis grouped by location
+    A_BK = 'A: book'
+    A_CH = 'A: chapter'
+    A_SEC = 'A: section'
+    A_VS = 'A: verse'
+    #-> What's left
+    A_FV = 'A: from verse context'
+
+    # Begin adding notes
+    # === Questions asking for Concordance-related answers ===
+    # --- A concordance ---
+    try:
+        # Find all questions coming from separate/consecutive verses, or...
+        # Find all questions asking for #-word Chapter Analysis
+        #-> Some of these will be overwritten by later searches
+        sub_df = df.loc[
+                            df['Location'].str.contains(r'S|C', case = True, na = False) |
+                            (
+                                df['Question'].str.contains(r'word', na = False) &
+                                df['Question'].str.contains(r'individual|geographical|parenthetical|exclamation|Old Testament Scripture|question', case = True, na = False)
+                            )
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_CONC
+    except Exception as e:
+        print('-> Issue with adding note:', A_CONC)
+        print('-->', e)
+        
+    # === Question swith key words in them ===
+    # --- A before / after A ---
+    try:
+        # Find all questions asking "before/after *Chapter Analysis*"
+        sub_df = df.loc[df['Question'].str.contains('before|after', case = False, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_BEFORE_AFTER_A
+    except Exception as e:
+        print('-> Issue with adding note:', A_BEFORE_AFTER_A)
+        print('-->', e)
+
+    # --- A answer A ---
+    try:
+        # Find all questions asking for a Chapter Analysis that answers another Chapter Analysis
+        sub_df = df.loc[df['Question'].str.contains(r'answer|reply|respond', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_ANSWER_A
+    except Exception as e:
+        print('-> Issue with adding note:', A_ANSWER_A)
+        print('-->', e)
+
+    # --- A OT reference ---
+    try:
+        # Find all questions mentioning an Old Testament Scripture's refernce from the Scripture Portion's end notes
+        sub_df = df.loc[df['Question'].str.contains(r'end\s*notes', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_OT_REF
+    except Exception as e:
+        print('-> Issue with adding note:', A_OT_REF)
+        print('-->', e)
+
+    # --- A Words of ---
+    try:
+        # Find all questions asking for Chapter Analysis that someone said
+        sub_df = df.loc[df['Question'].str.contains(r'\S+ say\?|said what|\S+ ask\?|asked what|\S+ exclaim\?|exclaimed what', case = False, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_WORDS_OF
+    except Exception as e:
+        print('-> Issue with adding note:', A_WORDS_OF)
+        print('-->', e)
+
+    # --- A nth ---
+    try:
+        # Find all questions asking for the "nth" Chapter Analysis in a series of consecutive Chapter Analysis
+        sub_df = df.loc[df['Question'].str.contains(r'Give the \w+st|Give the \w+nd|Give the \w+rd|Give the \w+th', case = False, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_NTH
+    except Exception as e:
+        print('-> Issue with adding note:', A_NTH)
+        print('-->', e)
+
+    # --- A concerning ---
+    try:
+        # Find all questions asking "concerning/about *something*, which *Chapter Analysis* is contained"
+        sub_df = df.loc[df['Question'].str.contains(r'Concerning|About', case = True, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            #-> This will override some A words of intentionally
+            df.loc[sub_df.index[i], 'Notes'] = A_CONCERNING
+    except Exception as e:
+        print('-> Issue with adding note:', A_CONCERNING)
+        print('-->', e)
+
+    # --- A title ---
+    try:
+        # Find all questions asking "which *title* is named"
+        sub_df = df.loc[df['Question'].str.contains(r'Which \S+ is \S+\?')]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_TITLE
+    except Exception as e:
+        print('-> Issue with adding note:', A_TITLE)
+        print('-->', e)
+
+    # === Straight up Chapter Analysis grouped by location ===
+    # --- A book ---
+    try:
+        # Find all questions asking for Chapter Analysis by a specific book
+        sub_df = df.loc[
+                         df['Location'].str.contains(r'bk', na = False) &
+                         (
+                             df['Question'].str.contains(r'which individual|which geographical|which parenthetical|which exclamation|which Old Testament Scripture|which question', case = False, na = False)|
+                             df['Question'].str.contains(r'is \S+\.|are \S+\.')
+                         )
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_BK
+    except Exception as e:
+        print('-> Issue with adding note:', A_BK)
+        print('-->', e)
+
+    
+    # --- A chapter ---
+    try:
+        # Find all questions asking for Chapter Analysis by a specific chapter and...
+        # Ensure we aren't overwriting anything we don't want to
+        sub_df = df.loc[
+                         (
+                             df['Location'].str.contains(r'ch', na = False) |
+                             df['Question'].str.contains(r'chapter', na = False)
+                         ) &
+                         (
+                             df['Question'].str.contains(r'which individual|which geographical|which parenthetical|which exclamation|which Old Testament Scripture|which question', case = False, na = False)|
+                             df['Question'].str.contains(r'is \S+\.|are \S+\.')
+                         ) &
+                        (
+                            (df['Notes'] == '') |
+                            (df['Notes'] == A_CONC)
+                        )
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_CH
+    except Exception as e:
+        print('-> Issue with adding note:', A_CH)
+        print('-->', e)            
+
+    # --- A section ---
+    try:
+        # Find all questions asking for Chapter Analysis by a specific section and...
+        # Ensure we aren't overwriting anything we don't want to
+        sub_df = df.loc[
+                         (
+                             df['Location'].str.contains(r'sec', na = False) |
+                             df['Question'].str.contains(r'section', na = False)
+                         ) &
+                         (
+                             df['Question'].str.contains(r'which individual|which geographical|which parenthetical|which exclamation|which Old Testament Scripture|which question', case = False, na = False)|
+                             df['Question'].str.contains(r'is \S+\.|are \S+\.')
+                         ) &
+                        (
+                            (df['Notes'] == '') |
+                            (df['Notes'] == A_CONC)
+                        )
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_SEC
+    except Exception as e:
+        print('-> Issue with adding note:', A_SEC)
+        print('-->', e)
+
+    # --- A verse ---
+    try:
+        # Find all questions asking for Chapter Analysis by a specific verse
+        sub_df = df.loc[df['Question'].str.contains(r'the \S+ verse|verse \d+', case = False, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_VS 
+    
+        # === What's left ===
+        # --- A from verse ---
+        # This will cover the remainder of Chapter Analysis questions that haven't been noted yet
+        sub_df = df.loc[df['Notes'] == '']
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_FV
+    except Exception as e:
+        print('-> Issue with adding note:', A_FV)
+        print('-->', e)
+
+    # Return the sub dateframe
+    return df
+
+def note_quote_essence(df):
+    """
+    Function to add notes to
+    - Quotation/Essence questions
+    - Quotation/Essence Completion questions
+
+    > std - Questions that ask the quizzer to say a verse given the reference... whether by book, chapter, or section
+    > UWS - Quotation Completion / Essence Completion questions
+
+    Returns the dataframe with the notes filled in
+    
+    """
+    # Create constant variables for each note
+    STD_BK = 'Standard quote/essence by book'
+    STD_CH = 'Standard quote/essence by chapter'
+    STD_SEC = 'Standard quote/essence by section'
+    UWS = 'Quotation/Essence completion question'
+
+    # Begin adding notes
+    # --- Std Book ---
+    try:
+        # Find all questions written like "quote/give in essence verse # from the #th chapter"
+        sub_df = df.loc[df['Question'].str.contains(r'from the \S+ chapter\.', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = STD_BK
+    except Exception as e:
+        print('-> Issue with adding note:', STD_BK)
+        print('-->', e)
+    
+    # --- Std Chapter ---
+    try:
+        # Find all questions written like "quote/give in essencd verse #" and...
+        # The question is coming from a chapter
+        sub_df = df.loc[
+                        df['Question'].str.contains(r'verse[s]* \d+|the \S+ verse', na = False) &
+                        df['Location'].str.contains(r'ch', na = False)
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = STD_CH
+    except Exception as e:
+        print('-> Issue with adding note:', STD_CH)
+        print('-->', e)
+
+    # --- Std Section ---
+    try:
+        # Find all questions asking for the opening/closing verse of a section
+        sub_df = df.loc[
+                        df['Question'].str.contains(r'the \S+ verse\.', na = False) &
+                        df['Location'].str.contains(r'sec', na = False)
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = STD_SEC
+    except Exception as e:
+        print('-> Issue with adding note:', STD_SEC)
+        print('-->', e)
+
+    # --- UWS ---
+    try:
+        # Find all Quotation/Essence Completion questions
+        sub_df = df.loc[df['Q_Intro'].str.contains(r'C', case = True, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = UWS
+    except Exception as e:
+        print('-> Issue with adding note:', UWS)
+        print('-->', e)
+
+    # Return the dataframe
+    return df
+
+def note_key_words(df):
+    """
+    Function to add notes to various questions containing key words in them
+    > about - Questions that ask for what someone said about something
+    > acc - Questions that begin with 'According to *insert reference*'
+    > acc true/happened - Questions that ask for "what is true" / "what happened" according to a verse
+    > Adj - Questions that ask for what a given adjective describes
+    > address - Questions that ask for how someone addresses someone else
+    > before / after A - Questions that ask for the words of someone before / after Chapter Analysis
+    > besides - Questions that begin with the word 'Besides'
+    > convo - Questions asking for a conversation between two people / groups of people
+    > desc - Questions that begin with the word 'Describe'
+    > did what - Questions that contain the phrase 'what did (person) do' or '(person) did what'
+    > hd - Questions that begin with 'How does verse #' or 'How do verses #...' or 'How does the #th verse' or 'How do(es) the opening/closing verse(s)'
+    > if - Questions that ask for questions having to do with the word 'if'
+    > mentioned - Questions that end with the word 'mentioned' or 'named'
+    > not mentioned - Questions that ask for something as if to ask "which ___ is mentioned", but it doesn't inculde mentioned
+    > noun ch - Questions that ask for the chapters in which a noun / verb is contained
+    > noun ref - Questions that ask for the (complete) references in which a noun / verb is contained
+    > of - Questions that ask the quizzer to complete / begin an 'of' phrase
+    > ref of sec - Questions that ask for the references of a section
+    > respond - Questions that ask how someone responded to either Chapter Analysis or some other event
+    > sec gets name - Questions that ask the quizzer to give the verse from which the section title gets its name
+    > short sec - Questions asking the quizzer to give an entire section that is short enough to say in 30 seconds
+    > true / happened - Questions that contain with the phrase 'what is true' / 'what happened'
+    > unique word - Questions that give the quizzer a word mentioned only once in the material being studied
+    > words of - Questions that ask for the words of a person / group of people
+
+    Returns the dataframe with the notes filled in
+    
+    """
+    # Create constant variables for each note
+    ABOUT = 'About'
+    ACC = 'According to *verse*'
+    ACC_TRUE_HAPPENED = 'According to *verse*, what is true/what happened/what did *someone* say'
+    ADDRESS = 'Address'
+    ADJ = 'Adjective'
+    BEFORE_AFTER_A = 'Before/after A'
+    BESIDES = 'Besides ___'
+    CONVO = 'Conversation'
+    DESC = 'Describe ___'
+    DID_WHAT = '___ did what'
+    HD = 'How does *verse* describe ___'
+    IF_STMNT = 'Conditional "if" statement'
+    MENTIONED = 'Mentioned'
+    NOT_MENTIONED = 'Not mentioned'
+    NOUN_CH = 'Concordance: List chapters'
+    NOUN_REF = 'Concordance: List references'
+    OF = '"of" phrase'
+    REF_OF_SEC = 'References of section'
+    RESPOND = 'Respond to ___'
+    SEC_GETS_NAME = 'Give verse from which section gets name'
+    SHORT_SEC = 'Short Section'
+    TRUE_HAPPENED = '___ what is true/what happened'
+    UNIQUE_WORD = 'Unique word'
+    WORDS_OF = 'Words of ___'
+
+    # Begin adding notes
+    # --- About ---
+    try:
+        # Find all questions that begin with "About" or "Concerning"
+        sub_df = df.loc[df['Question'].str.contains(r'About|Concerning', case = True, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = ABOUT
+    except Exception as e:
+        print('-> Issue with adding note:', ABOUT)
+        print('-->', e)
+
+    # --- According to *verse* ---
+    try:
+        # Find all questions that begin with "According to *verse*"
+        sub_df = df.loc[df['Question'].str.contains(r'According to verse|According to the \S+ verse', case = True, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = ACC
+    except Exception as e:
+        print('-> Issue with adding note:', ACC)
+        print('-->', e)
+
+    # --- According to *verse* what is true/what happened/what did *someone* say ---
+    try:
+        # Find all questions that are marked "According to *verse*" and...
+        # Check if any of them are asking something like "what is true" / "what happeend" / "what did *someone* say"
+        sub_df = df.loc[
+                        (df['Notes'] == ACC) &
+                        (df['Question'].str.contains(r'what \S+ true|what \S*\s*happen|what [\S\s]+ say|said what', case = False, na = False))
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = ACC_TRUE_HAPPENED
+    except Exception as e:
+        print('-> Issue with adding note:', ACC_TRUE_HAPPENED)
+        print('-->', e)
+
+    # --- Address ---
+    try:
+        # Find all questions that ask for how someone addresses someone else
+        sub_df = df.loc[df['Question'].str.contains(r'how does \w+ address \S+')]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = ADDRESS
+    except Exception as e:
+        print('-> Issue with adding note:', ADDRESS)
+        print('-->', e)
+
+    # --- ADJ ---
+    try:
+        # Find all questions asking something like "the word *ADJ* is used to describe what/whom" or...
+        # Find all questions containing the word "Adjective"
+        sub_df = df.loc[df['Question'].str.contains(r'is used to describe|adjective', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = ADJ
+    except Exception as e:
+        print('-> Issue with adding note:', ADJ)
+        print('-->', e)
+
+    # --- Before / After A ---
+    try:
+        # Find all question that ask for what someone says before/after saying a Chapter Analysis
+        sub_df = df.loc[df['Question'].str.contains(r'before \S+ing|after \S+ing', case = False, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = BEFORE_AFTER_A
+    except Exception as e:
+        print('-> Issue with adding note:', BEFORE_AFTER_A)
+        print('-->', e)
+
+    # --- Besides ---
+    try:
+        # Find all questions that contain the word "besides"
+        sub_df = df.loc[df['Question'].str.contains(r'besides', case = False, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = BESIDES
+    except Exception as e:
+        print('-> Issue with adding note:', BESIDES)
+        print('-->', e)
+
+    # --- Conversation ---
+    try:
+        # Find all questions asking for conversations between two people/groups of people
+        sub_df = df.loc[df['Question'].str.contains(r'conversation', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = CONVO
+    except Exception as e:
+        print('-> Issue with adding note:', CONVO)
+        print('-->', e)
+
+    # --- Describe ---
+    try:
+        # Find all questions beginning with the word "describe"
+        sub_df = df.loc[df['Question'].str.contains(r'Describe', case = True, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = DESC
+    except Exception as e:
+        print('-> Issue with adding note:', DESC)
+        print('-->', e)
+
+    # --- Did what ---
+    try:
+        # Find all questions asking for what someone did
+        sub_df = df.loc[df['Question'].str.contains(r'did what|what [\s\S]+ do', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = DID_WHAT
+    except Exception as e:
+        print('-> Issue with adding note:', DID_WHAT)
+        print('-->', e)
+
+    # --- HD ---
+    try:
+        # Find all questions asking for how a verse/group of verses describe something/someone
+        sub_df = df.loc[df['Question'].str.contains(r'How does verse|How do verses|How does the \S+ verse|How do the [\s\S]+ verses', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = HD
+    except Exception as e:
+        print('-> Issue with adding note:', HD)
+        print('-->', e)
+
+    # --- If statement ---
+    try:
+        # Find all questions asking for a conditional "if" statement or...
+        # Find all questions asking the result of a conditional "if" statement
+        sub_df = df.loc[df['Question'].str.contains(r'if ', case = False, na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = IF_STMNT
+    except Exception as e:
+        print('-> Issue with adding note:', IF_STMNT)
+        print('-->', e)
+
+    # --- Mentioned ---
+    try:
+        # Find all questions that end with the word "mentioned"
+        sub_df = df.loc[df['Question'].str.contains(r'mentioned\?', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = MENTIONED
+    except Exception as e:
+        print('-> Issue with adding note:', MENTIONED)
+        print('-->', e)
+
+    # --- Not Mentioned ---
+    try:
+        # Find all questions asking a mentioned question but coming from the verse's context instead
+        sub_df = df.loc[
+                        (df['Question'].str.contains(r'What kind[s]* of|Which', case = True, na = True)) &
+                        (df['Notes'] == '')
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = NOT_MENTIONED
+    except Exception as e:
+        print('-> Issue with adding note:', NOT_MENTIONED)
+        print('-->', e)
+
+    # --- Noun ch ---
+    try:
+        # Find all questions asking for the chapters in which something is mentioned
+        sub_df = df.loc[df['Question'].str.contains(r'chapters', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = NOUN_CH
+    except Exception as e:
+        print('-> Issue with adding note:', NOUN_CH)
+        print('-->', e)
+
+    # --- Noun ref ---
+    try:
+        # Find all questions asking for the (complete) references in which something is mentioned and...
+        # Ensure they are not quotation/essence questions
+        #-> Some of these questions will be overwritten by Ref of Sec
+        sub_df = df.loc[
+                        (df['Question'].str.contains(r'reference', na = False)) &
+                        (df['Q_Intro'].str.contains(r'Q|E', na = False) == False)
+                       ]
+        for i in range(len(sub_df)):
+            # Remove the references from the 'Ans_Reference' column
+            #-> To later be moved to 'Answer' column
+            df.loc[sub_df.index[i], 'Ans_Reference'] = '_'
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = NOUN_REF
+    except Exception as e:
+        print('-> Issue with adding note:', NOUN_REF)
+        print('-->', e)
+
+    # --- Of phrase ---
+    try:
+        # Find all questions where the quizzer is asked to complete/begin a phrase
+        sub_df = df.loc[df['Question'].str.contains(r'complete the [\S\s]*phrase|begin the [\S\s]*phrase', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = OF
+    except Exception as e:
+        print('-> Issue with adding note:', OF)
+        print('-->', e)
+
+    # --- Ref of sec ---
+    try:
+        # Find all questions asking for the references for the verses contained in a section
+        sub_df = df.loc[df['Question'].str.contains(r'references for the verses contained in the section', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = REF_OF_SEC
+    except Exception as e:
+        print('-> Issue with adding note:', REF_OF_SEC)
+        print('-->', e)
+
+    # --- Respond ---
+    try:
+        # Find all questions asking for a response to a Chapter Analysis
+        sub_df = df.loc[
+                        (df['Question'].str.contains(r'reply|respond|answer', na = False)) &
+                        (df['Question'].str.contains(r'question|Old Testament Scripture|exclamation', case = False, na = False))
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = RESPOND
+    except Exception as e:
+        print('-> Issue with adding note:', RESPOND)
+        print('-->', e)
+
+    # --- Sec Gets Name ---
+    try:
+        # Find all questions asking for the quizzer to give a verse from which a section title receives its title
+        sub_df = df.loc[df['Question'].str.contains(r'from which the section', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = SEC_GETS_NAME
+    except Exception as e:
+        print('-> Issue with adding note:', SEC_GETS_NAME)
+        print('-->', e)
+
+    # --- True / Happened ---
+    try:
+        # Find all questions containing the phrase "what is true" / "what happened" and...
+        # Ensure the question is not a quotation/essence question and...
+        # Ensure the questions don't start with "According to *verse*"
+        sub_df = df.loc[
+                        (df['Question'].str.contains(r'what \S+ true|what \S*\s*happen', case = False, na = False)) &
+                        (df['Q_Intro'].str.contains(r'Q|E', na = False) == False) &
+                        (df['Notes'] != ACC_TRUE_HAPPENED)
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = TRUE_HAPPENED
+    except Exception as e:
+        print('-> Issue with adding note:', TRUE_HAPPENED)
+        print('-->', e)
+
+    # --- Unique Word ---
+    try:
+        # Find all questions asking for a unique word or...
+        # Find all questions with no location in the introductory remarks that is coming from one verse
+        sub_df = df.loc[
+                        (df['Question'].str.contains(r'unique word|one verse|one chapter', case = False, na = False)) |
+                        (
+                            (df['Location'] == '_') &
+                            (df['Question'].str.contains('reference|chapter', na = False) == False)
+                        )
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = UNIQUE_WORD
+    except Exception as e:
+        print('-> Issue with adding note:', UNIQUE_WORD)
+        print('-->', e)
+
+    # --- Words of ---
+    try:
+        # Find all questions asking to give all the words of someone
+        sub_df = df.loc[df['Question'].str.contains(r'Give all \w+ words', na = False)]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = WORDS_OF
+    except Exception as e:
+        print('-> Issue with adding note:', WORDS_OF)
+        print('-->', e)
+
+    # Return the dataframe
+    return df
+
+def call_note_functions(df):
+    """
+    Function to call all the noting functions given a dateframe of questions
+
+    Returns the updated dataframe with all the notes filled in
+    
+    """
+    # Call all the noting functions using the dataframe we've been given
+    #-> Concordance Questions
+    df.update(note_concordance(df.loc[df['Location'].str.contains(r'S|C', case = True, na = False)]))
+    #-> Chapter Analysis Questions
+    df.update(note_chapter_analysis(df.loc[df['A_Intro'].str.contains('A', na = False)]))
+    #-> Quotation/Essence related Questions
+    df.update(note_quote_essence(df.loc[df['Q_Intro'].str.contains(r'Q|E', na = False)]))
+    #-> Key Word Questions
+    df.update(note_key_words(df.loc[df['A_Intro'].str.contains(r'A', na = False) == False]))
+
+    # Assign the uncerscore to all values in the 'Notes' column that didn't get assigned anything
+    #-> Find all empty 'Notes' values
+    df_blank = df.loc[df['Notes'] == '']
+    # Find the index of all questions that meet this criteria
+    for i in range(len(df_blank)):
+        # Assign the underscore to these questions' 'NOTES' column
+        df.loc[df_blank.index[i], 'Notes'] = '_'
+    
+    # Return the updated dateframe
+    return df
+        
 def add_notes(output_file):
     """
     Function to add notes to certain types of questions throughout set received
 
     This program adds notes to the following types of questions:
+    > app - Application questions
+    === Concordance Questions ===
+    > conc fv - Questions that require answers from different verses that have something in common
+    > conc QE - Questions that ask quizzers to say verses with something in common
+    === Chapter Analysis Questions ===
     > A before / after A - Questions that ask for Chapter Analysis that comes before / after other Chapter Analysis
     > A ch - Questions that ask for Chapter Analysis from a chapter
     > A concerning - Questions that ask for Chapter Analysis concerning a key word / phrase
     > A conc - Questions that ask for separate Chapter Analysis answers that have something in common
     > A fv - Questions that have a Chapter Analysis answer but have a question that comes from a verse
-    > A nth A - Questions that ask for the #th Chapter Analysis in a list of consecutive Chapter Analysis answers
+    > A nth A - Questions that ask for the #th Chapter Analysis in a list_question of consecutive Chapter Analysis answers
     > A OT Ref - Questions that mention the Old Testament reference of an Old Testament Scripture
     > A sec - Questions that ask for Chapter Analysis from a section
     > A title - Questions that ask for Chapter Analysis based on a title given to it by the Scripture
     > A vs - Questions that ask for Chapter Analysis from a verse
     > A words of - Questions that ask for Chapter Analysis that someone said
+    === Key Word Questions ===
     > about - Questions that ask for what someone said about something
     > acc - Questions that begin with 'According to *insert reference*'
     > Adj - Questions that ask for what a given adjective describes
     > address - Questions that ask for how someone addresses someone else
-    > app - Application questions
     > before / after A - Questions that ask for the words of someone before / after Chapter Analysis
     > besides - Questions that begin with the word 'Besides'
-    > conc fv - Questions that require answers from different verses that have something in common
-    > conc QE - Questions that ask quizzers to say verses with something in common
     > convo - Questions asking for a conversation between two people / groups of people
     > desc - Questions that begin with the word 'Describe'
     > did what - Questions that contain the phrase 'what did (person) do' or '(person) did what'
@@ -47,48 +831,8 @@ def add_notes(output_file):
     # Imports
     import pandas as pd
 
-    # Constants: string values for each note
-    A_BEFORE_AFTER_A = 'A before/after A'
-    A_CH = 'A chapter'
-    A_CONCERNING = 'A concerning ___'
-    A_CONC = 'A concordance'
-    A_FV = 'A from verse'
-    A_NTH = 'A Give the #th chapter analysis'
-    A_OT_REF = 'A Old Testament Reference'
-    A_SEC = 'A section'
-    A_TITLE = 'A title'
-    A_VS = 'A verse'
-    A_WORDS_OF = 'A words of ___'
-    ABOUT = 'About'
-    ACC = 'According to *verse*'
-    ADDRESS = 'Address'
-    ADJ = 'Adjective'
+    # Add a constant variable for any Application Questions
     APP = 'Application question'
-    BEFORE_AFTER_A = 'Before/after A'
-    BESIDES = 'Besides ___'
-    CONC_FV = 'Concordance: from verses'
-    CONC_QE = 'Concordance: give verses'
-    CONVO = 'Conversation'
-    DESC = 'Describe ___'
-    DID_WHAT = '___ did what'
-    HD = 'How does *verse* describe ___'
-    IF_STMNT = 'Conditional "if" statement'
-    MENTIONED = 'Mentioned'
-    NOT_MENTIONED = 'Not mentioned'
-    NOUN = 'Concordance: list chapters'
-    OF = '"of" phrase'
-    REF_OF_SEC = 'References of section'
-    RESPOND = 'Respond to ___'
-    SEC_NAME = 'Give verse from which section gets name'
-    SHORT_SEC = 'Short Section'
-    STD_BK = 'Standard quote/essence by book'
-    STD_CH = 'Standard quote/essence by chapter'
-    STD_SEC = 'Standard quote/essence by section'
-    TRUE_HAPPENED = '___ what is true/what happened'
-    UNIQUE_WORD = 'Unique word'
-    UWS = 'Quotation/Essence completion question'
-    VTGT = 'Verses that go together'
-    WORDS_OF = 'Words of ___'
 
     # Notify the user that we are adding in notes
     print('\n* Adding in Notes')
@@ -101,890 +845,30 @@ def add_notes(output_file):
     
         # Add a Blank 'Notes' Column to the Dataframe
         df['Notes'] = ''
-        
-        # Begin Adding Notes
-        try:
-            # --- A before / after A - Questions that ask for Chapter Analysis that comes before / after other Chapter Analysis ---
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Search for questions containing the keywords "after", "before", "follow", "precede", and "procede"
-            #list = df.loc[(df['A_Intro'].str.contains('A', case = True)) &
-            #                (df['Question'].str.contains('after|before|follow|precede|procede'))]
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Question'].str.contains('after|before|follow|precede|procede'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_BEFORE_AFTER_A
-        except Exception as e:
-            print('-> Issue with adding notes', A_BEFORE_AFTER_A)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
 
-        try:
-            # --- A ch - Questions that ask for Chapter Analysis from a chapter ---
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Check if the Loation or the Actual question has 'Chapter' in it, then...
-            # Check if the question asks directly for one of the chapter analysis, then...
-            #-> Individuals 
-            #-> Geographical locations
-            #-> Questions
-            #-> Exclamations
-            #-> Old Testament Scriptures
-            #-> Parenthetical statements
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (
-                                (df['Location'].str.contains('ch')) |
-                                (
-                                    (df['Question'].str.contains(r'chapter|\w+ \d+')) &
-                                    (df['Question'].str.contains('verse') == False)
-                                ) 
-                            ) &
-                            (
-                                (df['Question'].str.contains('hich individual|hich geographical|hat individual|hat geographical')) &
-                                (df['Question'].str.contains('name|contain'))
-                            ) |
-                            (
-                                (df['Question'].str.contains('hich question|hich exclamation|hich [Oo]ld [Tt]estament|hich parenthetical|hat question|hat exclamation|hat [Oo]ld [Tt]estament|hat parenthetical')) &
-                                (df['Question'].str.contains('contain'))
-                            )
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_CH
-        except Exception as e:
-            print('-> Issue with adding notes', A_CH)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
+        # Check for Application Questions first
+        if len(df.loc[df['Q_Intro'].str.contains('A', na = False)]) > 0:
+            # If so, add in notes for Application Questions
+            #-> Grab all the Application Questions
+            df_App = df.loc[df['Q_Intro'].str.contains('A', na = False)]
+            #-> For each question
+            for i in range(len(df_App)):
+                # Assign the appropriate note
+                df.loc[df_App.index[i], 'Notes'] = APP
+            #-> Create sub-dataframe of all non-app questions
+            df_non_App = df.loc[df['Q_Intro'].str.contains('A', na = False) == False]
+            
+            #-> Call all the noting functions using the sub-dataframe
+            df_non_App.update(call_note_functions(df_non_App))
+            
+            #-> Send all the findings from the non-app question dataframe to the original dataframe
+            df.update(df_non_App)
+            
+        # If there are no application questions
+        else:
+            # Call all the noting functions using the main dateframe
+            df.update(call_note_functions(df))
 
-        try:
-            # --- A concerning - Questions that ask for chapter analysis containing a certain word / phrase
-            # Search for all questions labeled with the Chapter Analysis introtudcory remark, then...
-            # Search for all questions that have the words 'concerning' or 'about' in them, or...
-            # Search for all questions that ask for a chapter analysis that contains a word/phrase, then...
-            # Check that these questions are NOT coming from multiple verses
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Question'].str.contains(r'Concerning|About|that contains|that mentions|begins with|starts? with|ends with', case = True)) &
-                            (df['Location'].str.contains('S|C|secs|bks|chs', case = True) == False)
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate veriable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_CONCERNING
-        except Exception as e:
-            print('-> Issue with adding notes', A_CONCERNING)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:        
-            # --- A conc - Questions that ask for separate Chapter Analysis answers that have something in common ---
-            # Search for all quesitons labeled with the Chapter Analysis introductory remark, then...
-            # Make sure the notes column isn't already marked by A_CONCERNING or A_CH, then...
-            # Search through the actual quesiton to find any concordance-based questions
-            #-> #-word Chapter Analysis
-            #-> Multiple-verse Chapter Analysis
-            #-> Identical Chapter Analysis
-            #-> word/phrase found within multiple Chapter Analysis
-            #-> Chapter Analysis found within Chapter Analysis
-            #-> Chapter Analysis that is also another type of Chapter Analysis
-            #-> Individuals/geographical locations with the same title
-            #-> Individuals/ geogrphical locations associated with the same verb
-            #-> Give the references for a Chapter Analysis
-            list = df.loc[
-                            (df['Question'].str.contains(r'reference[\s\w]+named')) |
-                            (
-                                (df['A_Intro'].str.contains('A', case = True)) &
-                                (df['Notes'] != A_CONCERNING) &
-                                (df['Notes'] != A_CH) &
-                                (
-                                    (df['Question'].str.contains(r'identical|within|contains?|also |spans|multi|with the word')) |
-                                    (df['Question'].str.contains('word individual|word geographical|word question|word exclamation|word Old Testament|word parenthetical')) |
-                                    (df['Question'].str.contains('verse question|verse exclamation|verse Old Testament|verse parenthetical')) |
-                                    (
-                                        (df['Question'].str.contains('Concerning|About', case = True)) &
-                                        (df['Notes'].str.contains(A_CONCERNING) == False)
-                                    ) |
-                                    (
-                                        (df['Question'].str.contains(r'hich \S+ are named')) &
-                                        (df['Question'].str.contains('individual|geographical') == False)
-                                    ) |
-                                    (
-                                        (df['Location'].str.contains('C|S', case = True)) &
-                                        (df['Question'].str.contains('Who |Where |where', case = True))
-                                    )
-                                )
-                            )
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_CONC
-        except Exception as e:
-            print('-> Issue with adding notes', A_CONC)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:        
-            # --- A fv - Questions that have a Chapter Analysis answer but have a question that comes from a verse ---
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Check if the 'Notes' column is empty
-            #-> Basically, A fv covers all the chapter analysis the other notes don't cover
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Notes'] == '')
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_FV
-        except Exception as e:
-            print('-> Issue with adding notes', A_FV)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- A nth A - Questions that ask for the #th Chapter Analysis in a list of consecutive Chapter Analysis answers
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Search for all questions that ask the quizzer to give the nth Chapter Analysis
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Question'].str.contains(r'Give the \w+st|Give the \w+nd|Give the \w+rd|Give the \w+th'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_NTH
-        except Exception as e:
-            print('-> Issue with adding notes', A_NTH)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-
-        try:
-            # --- A OT Ref - Questions that mention the Old Testament reference of an Old Testament Scripture
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Search the question for questions that mention that OT_REF and NT_REF contain the same Old Testament Scripture
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Question'].str.contains('the same Old Testament Scripture'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_OT_REF
-        except Exception as e:
-            print('-> Issue with adding notes', A_OT_REF)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- A sec - Questions that ask for Chapter Analysis from a section ---
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Check if the question itself contains any of the Chapter Analysis elements
-            # Check if the location or the question itself contains 'section', then...
-            # Check if the question is NOT asking from one or more verses, and...
-            # Check if the questions is NOT denoted with A_CONCERNING
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Question'].str.contains('individual|geographical|question|exclamation|estament|parenthetical')) &
-                            (
-                                (df['Location'].str.contains('sec')) |
-                                (df['Question'].str.contains('section'))
-                            ) &
-                            (
-                                (df['Question'].str.contains('verse') == False) &
-                                (df['Notes'] != A_CONCERNING)
-                            )
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_SEC
-        except Exception as e:
-            print('-> Issue with adding notes', A_SEC)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- A title - Questions that ask for Chapter Analysis based on a title given to it by the Scripture
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Ensure the answer to the question is coming from ONE verse, then...
-            # Check if the question asks for 'which *title* is named' (Note that the title can't be 'individual' or 'geographical location')
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Location'].str.contains('S|C|bks|chs|secs') == False) &
-                            (
-                                (df['Question'].str.contains(r'Which \S+ \S+ named')) &
-                                (df['Question'].str.contains('individual|geographical') == False)
-                            )
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                # NOTE: There are some cases where this will overwrite A_CONC.
-                #       This is intended to remove questions that come from only one verse (i.e. not concordance questions)
-                df.loc[index, 'Notes'] = A_TITLE
-        except Exception as e:
-            print('-> Issue with adding notes', A_TITLE)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-
-        try:
-            # --- A vs - Questions that ask for Chapter Analysis from a verse ---
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Check if the question itself contains any of the Chapter Analysis elements, then...
-            # Check if the question itself contains the word 'verse', then...
-            # Check that the question is NOT a concordance question
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Question'].str.contains('individual|geographical|question|exclamation|Testament|parenthetical')) &
-                            (df['Question'].str.contains('verse', case = False)) &
-                            (df['Notes'] != A_CONC)
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_VS
-        except Exception as e:
-            print('-> Issue with adding notes', A_VS)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:        
-            # --- A words of - Questions that ask for Chapter Analysis that someone said
-            # Search for all questions labeled with the Chapter Analysis introductory remark, then...
-            # Search for all questions that ask for what someone said / asked / exclaimed
-            list = df.loc[
-                            (df['A_Intro'].str.contains('A', case = True)) &
-                            (df['Question'].str.contains(r'what did [\S\s]+say|what did [\S\s]+ask|what did [\S\s]+exclaim|\S+ said what|saying what|asked|exclaimed', case = False))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = A_WORDS_OF
-        except Exception as e:
-            print('-> Issue with adding notes', A_WORDS_OF)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try: 
-            # --- about - Questions that ask for what someone said about something ---
-            # Search for questions that begin with "about" or "concerning", then...
-            # Check if the questions end with something like "what did *person* say"
-            list = df.loc[
-                            (df['Question'].str.contains('About|Concerning', case = True)) &
-                            (df['Question'].str.contains(r'what did [\w\s]+ say|what does [\w\s]+ say|\S+ said what'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = ABOUT
-        except Exception as e:
-            print('-> Issue with adding notes', ABOUT)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- acc - Questions that begin with 'According to *insert reference*' ---
-            # Search for questions that begin with "According to *insert reference*", or...
-            # Search for questions that begin with "In *insert reference*", then...
-            # Check that the answer is NOT a chapter analysis answer
-            list = df.loc[
-                            (
-                                (df['Question'].str.contains(r'According to \S+ \d+:\d+|According to the \S+ verse|According to verse \d+')) |
-                                (df['Question'].str.contains(r'In \S+ \d+:\d+|In the \S+ verse|In verse \d+'))
-                            ) &
-                            (df['A_Intro'].str.contains('A', case = True) == False)
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = ACC
-        except Exception as e:
-            print('-> Issue with adding notes', ACC)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:        
-            # --- address - Questions that ask for how someone addresses someone else
-            # Search for all questions that are worded like "In verse *verse*, how does *person1* address *person2*", or...
-            # Search for all questions that are worded like "In verse *verse*, what does *person1* call *person2*"
-            list = df.loc[
-                            (df['Question'].str.contains(r'how does [\w\s]+ address \S+|how do [\w\s]+ address \S+|how did [\w\s]+ address \S+')) |
-                            (df['Question'].str.contains(r'what does [\w\s]+ call \S+|what do [\w\s]+ call \S+|what did [\w\s]+ call \S+'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                # NOTE: this may overwrite some questions from acc. This is intended
-                df.loc[index, 'Notes'] = ADDRESS
-        except Exception as e:
-            print('-> Issue with adding notes', ADDRESS)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:  
-            # --- Adj - Questions that ask for what a given adjective describes ---
-            # Search for questions that ask for what a word describes, or...
-            # Search for quesitons that ask for what something was, then..
-            # Check and make sure it's not a complete answer - Most adjectives are looking for one-word answers
-            list = df.loc[
-                            (df['Question'].str.contains('is used to describe'))|
-                            (
-                                (df['Question'].str.contains(r'What is \S+\?|What are \S+\?|What was \S+\?|What were \S+\?', case = True)) &
-                                (df['A_Intro'].str.contains('C', case = True) == False)
-                            )
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = ADJ
-        except Exception as e:
-            print('-> Issue with adding notes', ADJ)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- app - Application questions ---
-            # Search the question introductory remark for "application"
-            list = df.loc[df['Q_Intro'].str.contains('A')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = APP
-        except Exception as e:
-            print('-> Issue with adding notes', APP)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- before / after A - Questions that ask for the words of someone before / after Chapter Analysis ---
-            # Search through the question for the words "before" or "after", then...
-            # CHeck if the question is asking for something before/after Chapter Analysis
-            list = df.loc[
-                            (df['Question'].str.contains('before|after', case = False)) &
-                            (df['Question'].str.contains(r'ask|exclaim|quote[^,]|quoting|Testament|parenthetical'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = BEFORE_AFTER_A
-        except Exception as e:
-            print('-> Issue with adding notes', BEFORE_AFTER_A)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- besides - Questions that ask for a list of answers besides one of them ---
-            # Search for questions that contain the word "besides"
-            list = df.loc[df['Question'].str.contains('besides', case = False)]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = BESIDES
-        except Exception as e:
-            print('-> Issue with adding notes', BESIDES)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- conc fv - Questions that require answers from different verses that have something in common ---
-            # Search for all questions that come from separate verses, chapters, sections, or books, then...
-            # Check if the question type is NOT quotation or essence, then...
-            # Check if the question is NOT a chapter analysis question, then...
-            # Check if the question is NOT an application question
-            # Search for all questions asking for the references of something that is not an individual / geographical location
-            list = df.loc[
-                            (
-                                (
-                                    (df['Location'].str.contains('S|chs|bks|secs', case = True)) |
-                                    (df['Ans_Reference'].str.contains(r':[\w\s]+:'))
-                                ) &
-                                (df['Q_Intro'].str.contains('Q|E') == False) &
-                                (df['Notes'] != A_CONC) &
-                                (df['A_Intro'].str.contains('A', case = True) == False)
-                            ) |
-                            (
-                                (df['Question'].str.contains('references')) &
-                                (df['Notes'] != A_CONC)
-                            )
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = CONC_FV
-        except Exception as e:
-            print('-> Issue with adding notes', CONC_FV)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-                
-        try:
-            # --- conc QE - Questions that ask quizzers to say verses with something in common ---
-            # Search for all questions that come from separate verses, chapters, sections, or books, then...
-            # Check if hte question is a quotation or essence question, then...
-            # Find all questions that ask the quizzer to quote/give in essence "these verses" indicating more than one verse
-            list = df.loc[
-                            (df['Location'].str.contains('S|chs|bks|secs', case = True)) &
-                            (df['Q_Intro'].str.contains('Q|E')) |
-                            (df['Question'].str.contains(r'these verses\.'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = CONC_QE
-        except Exception as e:
-            print('-> Issue with adding notes', CONC_QE)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- convo - Questions asking for a conversation between two people / groups of people ---
-            # Search for all questions asking for a converstaion
-            list = df.loc[df['Question'].str.contains('conversation')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = CONVO
-        except Exception as e:
-            print('-> Issue with adding notes', CONVO)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:        
-            # --- desc - Questions that begin with the word 'Describe' ---
-            # Search for all questions that begin with the word "describe"
-            list = df.loc[df['Question'].str.contains('Describe', case = True)]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = DESC
-        except Exception as e:
-            print('-> Issue with adding notes', DESC)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try: 
-            # --- did what - Questions that contain the phrase 'what did (person) do' or '(person) did what' ---
-            # Search for all questions that ask for what a person did, then...
-            # Check that the question is NOT a concordance question, or...
-            # Check that the question is NOT an "according to" question
-            list = df.loc[
-                            (df['Question'].str.contains(r'what did [\w\s]+ do|\S+ did what|were doing what', case = False)) &
-                            (df['Notes'] != CONC_FV) &
-                            (df['Notes'] != ACC)
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = DID_WHAT
-        except Exception as e:
-            print('-> Issue with adding notes', DID_WHAT)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try: 
-            # --- hd - Questions that begin with 'How does verse #' or 'How do verses #...' or 'How does the #th verse' or 'How do(es) the opening/closing verse(s)' ---
-            # Search for all questions that start with "how does" or "how do"
-            list =df.loc[df['Question'].str.contains(r'How does verse \d|How does the \d|How do verses \d|How do the opening|How do the closing')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = HD
-        except Exception as e:
-            print('-> Issue with adding notes', HD)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try: 
-            # --- if - Questions that ask for questions having to do with the word 'if' ---
-            # Search for all questions that contain the phrase "conditional "if" statement" or "Under what condition"
-            list = df.loc[df['Question'].str.contains('hich conditional|nder what condition|hat would be true')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = IF_STMNT
-        except Exception as e:
-            print('-> Issue with adding notes', IF_STMNT)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- mentioned - Questions that end with the word 'mentioned' or 'named' ---
-            # Search for all questions that end with "mentioned" or "named", then...
-            # Check if the question is NOT Chapter Analysis, then...
-            # Check if the question is NOT a concordance question
-            list = df.loc[
-                            (df['Question'].str.contains(r'mentioned\?|mention\?|named\?|name\?')) &
-                            (df['A_Intro'].str.contains('A') == False) &
-                            (df['Notes'] != CONC_FV)
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = MENTIONED
-        except Exception as e:
-            print('-> Issue with adding notes', MENTIONED)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- not mentioned - Questions that ask for something as if to ask "which ___ is mentioned", but it doesn't inculde mentioned
-            # Search for all quesitons that begin with the word "which" BUT don't end with "mentioned", "named", or "contained", then...
-            # Make sure the 'NOTES' column is blank
-            list = df.loc[
-                            (df['Question'].str.contains('Which|What kind of', case = True)) &
-                            (df['Question'].str.contains('mentioned|named|contained') == False) &
-                            (df['Notes'] == '')
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = NOT_MENTIONED
-        except Exception as e:
-            print('-> Issue with adding notes', NOT_MENTIONED)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:        
-            # --- noun - Questions that ask for the chapters in which a noun / verb is contained ---
-            # Search for all questions that ask for chapters as their answer
-            list = df.loc[df['Question'].str.contains('which chapter|this chapter|these chapters')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = NOUN
-        except Exception as e:
-            print('-> Issue with adding notes', NOUN)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- of - Questions that ask the quizzer to complete / begin an 'of' phrase ---
-            # Search for all questions that ask the quizzer to complete / begin an "of" phrase
-            list = df.loc[df['Question'].str.contains(r'complete the[\s\S]+ phrase|begin the[\s\S]+ phrase')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = OF
-        except Exception as e:
-            print('-> Issue with adding notes', OF)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:        
-            # --- ref of sec - Questions that ask for the references of a section ---
-            # Search for all questions that ask for the references of a section
-            list = df.loc[
-                            (df['Question'].str.contains('references')) &
-                            (df['Question'].str.contains('section'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                # NOTE: This will overwrite some questions labeled CONC_FV. This is intended
-                df.loc[index, 'Notes'] = REF_OF_SEC
-        except Exception as e:
-            print('-> Issue with adding notes', REF_OF_SEC)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- respond - Questions that ask how someone responded to either Chapter Analysis or some other event ---
-            # Search for all questions asking how someone responded to something
-            list = df.loc[df['Question'].str.contains(r'How[\s\S]+ respond|How[\s\S]+ answer|How[\s\S]+ reply|response')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = RESPOND
-        except Exception as e:
-            print('-> Issue with adding notes', RESPOND)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-
-        try:
-            # --- sec name - Questions that ask the quizzer to give the verse from which the section gets its name
-            # Search for all questions labeled either quotation or essence question, then...
-            # Check to make sure the questions are coming from a section, then...
-            # Check if the question is asking the quizzer to say the verse from which the section gets its name
-            #-> Do this by checking for the words "verse" and "section" in the question
-            list = df.loc[
-                            (
-                                (df['Q_Intro'] == 'Q') |
-                                (df['Q_Intro'] == 'E')
-                            ) &
-                            (df['Location'] == 'sec') &
-                            (df['Question'].str.contains(r'verse[\s\S]+section'))
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = SEC_NAME
-        except Exception as e:
-            print('-> Issue with adding notes', SEC_NAME)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- short sec - Questions that ask the quizzer to say an entire section that is short enough to say in 30 seconds
-            # Search for all quesitons asking the quizzer to quote/give in essence the section titled "*insert section title*"
-            list = df.loc[df['Question'].str.contains(r'Quote the[\s\S]+ section titled|Give in essence the[\s\S]+ section titled')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = SHORT_SEC
-        except Exception as e:
-            print('-> Issue with adding notes', SHORT_SEC)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- std - Questions that ask the quizzer to say a verse given the reference ---
-            # Search for all questions that ask the quizzer to quote/give in essence a verse(s), then...
-            # Check that this won't overwrite any other notes
-            list = df.loc[
-                            (df['Question'].str.contains(r'Quote verse|Quote the [\s\w]+ verses?\.|Give in essence verse|Give in essence the [\s\w]+ verses?\.', case = False)) &
-                            (df['Notes'] == '')
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Check where the question is coming from
-                if 'ch' in df.loc[index, 'Location']:
-                    # If from the chapter, assign STD_CH
-                    df.loc[index, 'Notes'] = STD_CH
-                elif 'sec' in df.loc[index, 'Location']:
-                    # If from a section, assign STD_SEC
-                    df.loc[index, 'Notes'] = STD_SEC
-                else:
-                    # If from a book or from nowhere, assign STD_BK
-                    df.loc[index, 'Notes'] = STD_BK
-        except Exception as e:
-            print('-> Issue with adding notes', STD_CH)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- true / happened - Questions that contain with the phrase 'what is/was true' / 'what happened/will happen' ---
-            # Search for all questions that contain the phrase "what is true" or "what happened", or...
-            # Search for all questions that ask for what resulted from something happening, then...
-            # Check that the question is NOT a concordance question, then...
-            # Check that the question is NOT an application question
-            list = df.loc[
-                            (df['Question'].str.contains('what is true|what was true|what happened|what will happen|result', case = False)) &
-                            (df['Notes'] != CONC_FV) &
-                            (df['Q_Intro'].str.contains('A', case = True) == False)
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = TRUE_HAPPENED
-        except Exception as e:
-            print('-> Issue with adding notes', TRUE_HAPPENED)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:        
-            # --- unique word - Questions that give the quizzer a word mentioned only once in the material being studied ---
-            # Search for all questions telling the quizzer to identify the verse, reference, or chapter a word is in
-            list = df.loc[df['Question'].str.contains('this verse|this chapter|unique word')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = UNIQUE_WORD
-        except Exception as e:
-            print('-> Issue with adding notes', UNIQUE_WORD)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- UWS - Quotation Completion / Essence Completion questions ---
-            # Search the introductory remarks for all Quotation/Essence Completion questions
-            list = df.loc[df['Q_Intro'].str.contains('C')]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = UWS
-        except Exception as e:
-            print('-> Issue with adding notes', UWS)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-                
-        try:
-            # --- VTGT - Non-Quote / Non-Essence questions with answers coming from consecutive verses ---
-            # Search for all questions coming from consecutive verses, then...
-            # Check for all questions that are NOT quotation/essence questions, then...
-            # Check that the 'Notes' column is blank - we don't want to overwrite anything we already have as VTGT is for more vague consecutive verse questions
-            #-> Unless it's a concordance question from the verse
-            list = df.loc[
-                            (df['Location'].str.contains('C', case = True)) &
-                            (df['Q_Intro'].str.contains('Q|E') == False) &
-                            (
-                                (df['Notes'] == '') |
-                                (df['Notes'] == CONC_FV)
-                            )
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = VTGT
-        except Exception as e:
-            print('-> Issue with adding notes', VTGT)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-    
-        try:
-            # --- words of - Questions that ask for the words of a person / group of people ---
-            # Search for all questions asking for somthing someone said, then...
-            # Check that the question isn't asking for a Chapter Analysis answer, then... 
-            # Check that the person saying anything is not the author of the material being studied, then...
-            # Ensure the question is NOT asking an 'according' question
-            list = df.loc[
-                            (df['Question'].str.contains(r'what did [\w\s]+ say|what does [\w\s]+ say|\S+ said what|give all the words of \S+|give all [\S\s]+ words', case = False)) &
-                            (df['A_Intro'].str.contains('A', case = True) == False) &
-                            (df['Question'].str.contains('Concerning|About', case = True) == False) &
-                            (df['Notes'] != ACC) &
-                            (df['Notes'] != BEFORE_AFTER_A)                                
-                         ]
-            # Find the index of all questions that meet this criteria
-            for i in range(len(list)):
-                index = list.index[i]
-                # Assign the appropriate variable to these questions' 'NOTES' column
-                df.loc[index, 'Notes'] = WORDS_OF
-        except Exception as e:
-            print('-> Issue with adding notes', WORDS_OF)
-            if 'Cannot mask with non-boolean array containing NA / NaN values' in str(e):
-                print('-> You may be missing an actual question. Check the "Question" column for a blank value.')
-            else:
-                print('->', e)
-
-        
-        
-        # Assign the uncerscore to all values in the 'Notes' column that didn't get assigned anything
-        #-> Find all empty 'Notes' values
-        list = df.loc[df['Notes'] == '']
-        # Find the index of all questions that meet this criteria
-        for i in range(len(list)):
-            index = list.index[i]
-            # Assign the underscore to these questions' 'NOTES' column
-            df.loc[index, 'Notes'] = '_'
-
-        
         # Write the updated dataframe to the CSV file
         #-> Make the 'index' variable False to avoid unncessary rows being added
         #-> Set the encoding to 'latin' to help with quotation marks
