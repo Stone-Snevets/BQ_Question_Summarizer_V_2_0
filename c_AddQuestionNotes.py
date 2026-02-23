@@ -71,6 +71,7 @@ def note_chapter_analysis(df):
     > A concerning - Questions that ask for Chapter Analysis concerning a key word / phrase
     > A title - Questions that ask for Chapter Analysis based on a title given to it by the Scripture
     == Straight up Chapter Analysis grouped by location
+    > A all - Questions that ask for Chapter Analysis from all the material being studied
     > A bk - Questions that ask for Chapter Analysis from a book
     > A ch - Questions that ask for Chapter Analysis from a chapter
     > A sec - Questions that ask for Chapter Analysis from a section
@@ -94,6 +95,7 @@ def note_chapter_analysis(df):
     A_CONCERNING = 'A: concerning ___'
     A_TITLE = 'A: title'
     #-> Straight up Chapter Analysis grouped by location
+    A_ALL = 'A: entirety'
     A_BK = 'A: book'
     A_CH = 'A: chapter'
     A_SEC = 'A: section'
@@ -163,7 +165,7 @@ def note_chapter_analysis(df):
     # --- A Words of ---
     try:
         # Find all questions asking for Chapter Analysis that someone said
-        sub_df = df.loc[df['Question'].str.contains(r'\S+ say\?|said what|\S+ ask\?|asked what|\S+ exclaim\?|exclaimed what', case = False, na = False)]
+        sub_df = df.loc[df['Question'].str.contains(r'\S+ say\?|said what|\S+ ask\?|asked|\S+ exclaim\?|exclaimed', case = False, na = False)]
         # For each instance of this note
         for i in range(len(sub_df)):
             # Add the appropriate note in the 'Notes' column
@@ -210,6 +212,26 @@ def note_chapter_analysis(df):
         print('-->', e)
 
     # === Straight up Chapter Analysis grouped by location ===
+    # --- A all ---
+    try:
+        # Find all questions asking for Chapter Analysis by a specific book
+        sub_df = df.loc[
+                         (df['Location'].str.contains(r'bk|ch|sec', na = False) == False) &
+                         (
+                             df['Question'].str.contains(r'which individual|which geographical|which parenthetical|which exclamation|which Old Testament Scripture|which question', case = False, na = False)|
+                             df['Question'].str.contains(r'what individual|what geographical|what parenthetical|what exclamation|what Old Testament Scripture|what question', case = False, na = False)|
+                             df['Question'].str.contains(r'is \S+\.|are \S+\.')
+                         )
+                       ]
+        # For each instance of this note
+        for i in range(len(sub_df)):
+            # Add the appropriate note in the 'Notes' column
+            df.loc[sub_df.index[i], 'Notes'] = A_ALL
+    except Exception as e:
+        print('-> Issue with adding note:', A_ALL)
+        print('-->', e)
+
+    
     # --- A book ---
     try:
         # Find all questions asking for Chapter Analysis by a specific book
@@ -217,6 +239,7 @@ def note_chapter_analysis(df):
                          df['Location'].str.contains(r'bk', na = False) &
                          (
                              df['Question'].str.contains(r'which individual|which geographical|which parenthetical|which exclamation|which Old Testament Scripture|which question', case = False, na = False)|
+                             df['Question'].str.contains(r'what individual|what geographical|what parenthetical|what exclamation|what Old Testament Scripture|what question', case = False, na = False)|
                              df['Question'].str.contains(r'is \S+\.|are \S+\.')
                          )
                        ]
@@ -235,16 +258,18 @@ def note_chapter_analysis(df):
         # Ensure we aren't overwriting anything we don't want to
         sub_df = df.loc[
                          (
-                             df['Location'].str.contains(r'ch', na = False) |
-                             df['Question'].str.contains(r'chapter', na = False)
+                             df['Location'].str.contains(r'ch', na = False) | # The question is coming from the chapter
+                             df['Question'].str.contains(r'\d+ name|\d+ contain|\d+ ask', na = False) # The question asks "*Book* [chapter] *chapter number*..."
                          ) &
                          (
                              df['Question'].str.contains(r'which individual|which geographical|which parenthetical|which exclamation|which Old Testament Scripture|which question', case = False, na = False)|
+                             df['Question'].str.contains(r'what individual|what geographical|what parenthetical|what exclamation|what Old Testament Scripture|what question', case = False, na = False)|
                              df['Question'].str.contains(r'is \S+\.|are \S+\.')
                          ) &
                         (
                             (df['Notes'] == '') |
-                            (df['Notes'] == A_CONC)
+                            (df['Notes'] == A_CONC)|
+                            (df['Notes'] == A_BK)
                         )
                        ]
         # For each instance of this note
@@ -266,6 +291,7 @@ def note_chapter_analysis(df):
                          ) &
                          (
                              df['Question'].str.contains(r'which individual|which geographical|which parenthetical|which exclamation|which Old Testament Scripture|which question', case = False, na = False)|
+                             df['Question'].str.contains(r'what individual|what geographical|what parenthetical|what exclamation|what Old Testament Scripture|what question', case = False, na = False)|
                              df['Question'].str.contains(r'is \S+\.|are \S+\.')
                          ) &
                         (
@@ -354,10 +380,13 @@ def note_quote_essence(df):
 
     # --- Std Section ---
     try:
-        # Find all questions asking for the opening/closing verse of a section
+        # Find all questions asking for the opening/closing verse(s) of a section
         sub_df = df.loc[
-                        df['Question'].str.contains(r'the \S+ verse\.', na = False) &
-                        df['Location'].str.contains(r'sec', na = False)
+                        (
+                            df['Location'].str.contains(r'sec', na = False) & # The question is coming from the section
+                            df['Question'].str.contains(r'the \S+ verse[s]*\.', na = False) 
+                        ) |
+                        df['Question'].str.contains(r'the \S+ verse[s]* of the section', na = False) # The section is in the question itself
                        ]
         # For each instance of this note
         for i in range(len(sub_df)):
@@ -387,7 +416,7 @@ def note_key_words(df):
     Function to add notes to various questions containing key words in them
     > about - Questions that ask for what someone said about something
     > acc - Questions that begin with 'According to *insert reference*'
-    > acc true/happened - Questions that ask for "what is true" / "what happened" according to a verse
+    > acc true/happened - Questions that ask for "what is true" / "what happened / what did *someone* say / what did *someone* do" according to a verse
     > Adj - Questions that ask for what a given adjective describes
     > address - Questions that ask for how someone addresses someone else
     > before / after A - Questions that ask for the words of someone before / after Chapter Analysis
@@ -416,7 +445,7 @@ def note_key_words(df):
     # Create constant variables for each note
     ABOUT = 'About'
     ACC = 'According to *verse*'
-    ACC_TRUE_HAPPENED = 'According to *verse*, what is true/what happened/what did *someone* say'
+    ACC_TRUE_HAPPENED = 'According to *verse*<br>> what is true<br>> what happened<br>> what did *someone* do<br>> what did *someone* say'
     ADDRESS = 'Address'
     ADJ = 'Adjective'
     BEFORE_AFTER_A = 'Before/after A'
@@ -470,7 +499,7 @@ def note_key_words(df):
         # Check if any of them are asking something like "what is true" / "what happeend" / "what did *someone* say"
         sub_df = df.loc[
                         (df['Notes'] == ACC) &
-                        (df['Question'].str.contains(r'what \S+ true|what \S*\s*happen|what [\S\s]+ say|said what', case = False, na = False))
+                        (df['Question'].str.contains(r'what \S+ true|what \S*\s*happen|what [\S\s]+ say|said what|what [\S\s]+ do|did what', case = False, na = False))
                        ]
         # For each instance of this note
         for i in range(len(sub_df)):
@@ -494,9 +523,9 @@ def note_key_words(df):
 
     # --- ADJ ---
     try:
-        # Find all questions asking something like "the word *ADJ* is used to describe what/whom" or...
+        # Find all questions asking something like "the word *ADJ* is used to describe/describes what/whom" or...
         # Find all questions containing the word "Adjective"
-        sub_df = df.loc[df['Question'].str.contains(r'is used to describe|adjective', na = False)]
+        sub_df = df.loc[df['Question'].str.contains(r'is used to describe|adjective|describes', na = False)]
         # For each instance of this note
         for i in range(len(sub_df)):
             # Add the appropriate note in the 'Notes' column
@@ -555,8 +584,12 @@ def note_key_words(df):
 
     # --- Did what ---
     try:
-        # Find all questions asking for what someone did
-        sub_df = df.loc[df['Question'].str.contains(r'did what|what [\s\S]+ do', na = False)]
+        # Find all questions asking for what someone did and...
+        # Ensure these questions don't start with "According to *verse*""
+        sub_df = df.loc[
+                        (df['Question'].str.contains(r'did what|what [\s\S]+ do', na = False)) &
+                        (df['Notes'] != ACC_TRUE_HAPPENED)
+                       ]
         # For each instance of this note
         for i in range(len(sub_df)):
             # Add the appropriate note in the 'Notes' column
@@ -725,7 +758,8 @@ def note_key_words(df):
                         (df['Question'].str.contains(r'unique word|one verse|one chapter', case = False, na = False)) |
                         (
                             (df['Location'] == '_') &
-                            (df['Question'].str.contains('reference|chapter', na = False) == False)
+                            (df['Question'].str.contains('reference|chapter', na = False) == False) &
+                            (df['Notes'] == '')
                         )
                        ]
         # For each instance of this note
@@ -739,7 +773,7 @@ def note_key_words(df):
     # --- Words of ---
     try:
         # Find all questions asking to give all the words of someone
-        sub_df = df.loc[df['Question'].str.contains(r'Give all \w+ words', na = False)]
+        sub_df = df.loc[df['Question'].str.contains(r'Give all \S+[\s\S]* words', na = False)]
         # For each instance of this note
         for i in range(len(sub_df)):
             # Add the appropriate note in the 'Notes' column
@@ -766,7 +800,7 @@ def call_note_functions(df):
     #-> Quotation/Essence related Questions
     df.update(note_quote_essence(df.loc[df['Q_Intro'].str.contains(r'Q|E', na = False)]))
     #-> Key Word Questions
-    df.update(note_key_words(df.loc[df['A_Intro'].str.contains(r'A', na = False) == False]))
+    df.update(note_key_words(df.loc[(df['A_Intro'].str.contains(r'A', na = False) == False) & (df['Q_Intro'].str.contains(r'C', na = False) == False)]))
 
     # Assign the uncerscore to all values in the 'Notes' column that didn't get assigned anything
     #-> Find all empty 'Notes' values
