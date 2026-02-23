@@ -112,15 +112,10 @@ def get_answer_part(question, q_intro, set_num, question_num):
     try:
         # Imports
         import re     # For finding what type of intros are being used
-    
+
         # Grab only the answer introductory part of this question
-        #-> If the question introductory part is blank, search for "points..."
-        if re.search(r'question\s*\.\s[\w\s]+[Aa]nswers?\.', question) == None:
-            a_intro = re.search(r'points\.\s([\s\S]+[Aa]nswers?\.)', question).group(1)
-        #-> If the question introductory part exists, search for "question..."
-        else:
-            a_intro = re.search(r'question\s*\.\s([\s\S]+[Aa]nswers?\.)', question).group(1)
-            
+        a_intro = re.search(r'([^.]+[Aa]nswer[s]*\.)', question).group(1)
+
         # Create an empty string to appened the answers to
         a_shorthand = ''
       
@@ -441,6 +436,8 @@ def summarize(file_contents):
                 #--> It depends on the type of the input file
                 question_ends = re.search(r'\s\s+|\n', list_of_questions[i][question_starts:]).start() + question_starts
                 actual_question = list_of_questions[i][question_starts:question_ends+1]
+                #-> Strip the question of any leftover whitespace
+                actual_question = actual_question.strip()
     
                 # Get all the available referenes for where the answer comes from
                 #-> Group what the reference should contain
