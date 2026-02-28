@@ -1,11 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <title>BQ_question_analyzer</title>
+    <title>BQ Question Analyzer</title>
 
     <!-- Recommended meta tags -->
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width,initial-scale=1.0">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <!-- PyScript CSS -->
     <link rel="stylesheet" href="https://pyscript.net/releases/2025.7.3/core.css">
@@ -13,117 +18,469 @@
     <!-- This script tag bootstraps PyScript -->
     <script type="module" src="https://pyscript.net/releases/2025.7.3/core.js"></script>
 
-    <!--- Specifications for a viewing table --->
-    <!--  > For the actual table -->
-    <!--  > For the table's contents -->
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #e8f0fe;
+            color: #1e293b;
+            min-height: 100vh;
+        }
+
+        /* ── Header Banner ── */
+        .header {
+            background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 50%, #3b82f6 100%);
+            color: white;
+            text-align: center;
+            padding: 2.5rem 1rem 2rem;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(37, 99, 235, 0.4);
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -20%;
+            width: 60%;
+            height: 200%;
+            background: rgba(255,255,255,0.06);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .header::after {
+            content: '';
+            position: absolute;
+            bottom: -60%;
+            right: -10%;
+            width: 50%;
+            height: 180%;
+            background: rgba(255,255,255,0.04);
+            border-radius: 50%;
+            pointer-events: none;
+        }
+
+        .header h1 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 1;
+        }
+
+        .header h2 {
+            font-size: 1.15rem;
+            font-weight: 500;
+            margin-top: 0.4rem;
+            opacity: 0.9;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .version-link {
+            display: inline-block;
+            margin-top: 0.6rem;
+            font-size: 0.8rem;
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 20px;
+            padding: 0.2rem 0.75rem;
+            transition: all 0.2s;
+            position: relative;
+            z-index: 1;
+        }
+
+        .header .version-link:hover {
+            background: rgba(255,255,255,0.15);
+            color: white;
+        }
+
+        /* ── Main Content ── */
+        .container {
+            max-width: 860px;
+            margin: 2rem auto;
+            padding: 0 1rem 3rem;
+        }
+
+        /* ── Instructions Card ── */
+        .card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(37, 99, 235, 0.1);
+            padding: 1.75rem 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 700;
+            color: #1d4ed8;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            margin-bottom: 1rem;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 0.85rem;
+        }
+
+        .step {
+            display: flex;
+            gap: 0.85rem;
+            align-items: flex-start;
+        }
+
+        .step-num {
+            min-width: 28px;
+            height: 28px;
+            background: #2563eb;
+            color: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            font-weight: 700;
+            flex-shrink: 0;
+            margin-top: 1px;
+        }
+
+        .step-content {
+            font-size: 0.92rem;
+            line-height: 1.5;
+        }
+
+        .step-content ul {
+            list-style: none;
+            margin-top: 0.35rem;
+            padding-left: 0.2rem;
+        }
+
+        .step-content ul li {
+            color: #475569;
+            padding: 0.1rem 0;
+            font-size: 0.87rem;
+        }
+
+        .step-content ul li::before {
+            content: '→ ';
+            color: #3b82f6;
+            font-weight: 600;
+        }
+
+        a {
+            color: #2563eb;
+            font-weight: 500;
+        }
+
+        a:hover {
+            color: #1d4ed8;
+        }
+
+        .shorthand-note {
+            text-align: center;
+            margin-top: 0.25rem;
+            font-size: 0.87rem;
+            color: #64748b;
+        }
+
+        /* ── Upload Area ── */
+        .upload-card {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 2px 16px rgba(37, 99, 235, 0.1);
+            padding: 1.75rem 2rem;
+            margin-bottom: 1.5rem;
+            border: 2px dashed #bfdbfe;
+            transition: border-color 0.2s;
+        }
+
+        .upload-card:hover {
+            border-color: #3b82f6;
+        }
+
+        .upload-label {
+            display: block;
+            font-size: 0.95rem;
+            font-weight: 600;
+            color: #1d4ed8;
+            margin-bottom: 0.75rem;
+        }
+
+        #input_file {
+            display: block;
+            font-size: 0.9rem;
+            color: #374151;
+            cursor: pointer;
+        }
+
+        #input_file::file-selector-button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 0.5rem 1.1rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 600;
+            cursor: pointer;
+            margin-right: 0.75rem;
+            transition: background 0.2s;
+        }
+
+        #input_file::file-selector-button:hover {
+            background: #1d4ed8;
+        }
+
+        /* ── PyScript terminal (keep default, just add margin) ── */
+        .terminal-wrapper {
+            margin-bottom: 1.5rem;
+        }
+
+        /* ── Action Buttons ── */
+        .actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        button {
+            padding: 0.65rem 1.4rem;
+            border: none;
+            border-radius: 10px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.15s, box-shadow 0.15s, background 0.2s;
+        }
+
+        button:active {
+            transform: scale(0.97);
+        }
+
+        #view_button {
+            background: #2563eb;
+            color: white;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+        }
+
+        #view_button:hover {
+            background: #1d4ed8;
+            box-shadow: 0 6px 18px rgba(37, 99, 235, 0.45);
+            transform: translateY(-1px);
+        }
+
+        #download_button {
+            background: #0f9e6e;
+            color: white;
+            box-shadow: 0 4px 14px rgba(15, 158, 110, 0.35);
+        }
+
+        #download_button:hover {
+            background: #0c8a5f;
+            box-shadow: 0 6px 18px rgba(15, 158, 110, 0.45);
+            transform: translateY(-1px);
+        }
+
+        #view_pivot_button {
+            background: #7c3aed;
+            color: white;
+            box-shadow: 0 4px 14px rgba(124, 58, 237, 0.35);
+        }
+
+        #view_pivot_button:hover {
+            background: #6d28d9;
+            box-shadow: 0 6px 18px rgba(124, 58, 237, 0.45);
+            transform: translateY(-1px);
+        }
+
+        /* ── Output Areas ── */
+        #dump {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem 1.25rem;
+            font-size: 0.85rem;
+            color: #475569;
+            white-space: pre-wrap;
+            margin-bottom: 1rem;
+        }
+
+        #dump:empty { display: none; }
+
+        #output {
+            margin-bottom: 1rem;
+        }
+
+        /* ── Tables ── */
         table {
             border-collapse: collapse;
             margin-top: 1em;
             background: #fff;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.07);
+            width: 100%;
         }
-        th, td {
-            border: 1px solid #ccc;
-            padding: 6px 12px;
-            text-align: left;
-        }
-        th {
-            background:#f0f0f0;
-        }
-    </style>
 
-    
-    <!--- Specifications for pivot tables --->
-    <!--  > For the output variable -->
-    <!--  > For the pivot tables -->
-    <!--  > For the contents of the pivot tables -->
-    <style>
-        # output_pivot {
+        th, td {
+            border: 1px solid #e2e8f0;
+            padding: 8px 14px;
+            text-align: left;
+            font-size: 0.88rem;
+        }
+
+        th {
+            background: #1d4ed8;
+            color: white;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+
+        tr:nth-child(even) td {
+            background: #f0f6ff;
+        }
+
+        /* ── Pivot Tables ── */
+        #output_pivot {
             margin-top: 1.5rem;
         }
+
         .pivot-table {
             margin-top: 1.0rem;
             margin-bottom: 2.0rem;
             border-collapse: collapse;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 1px 8px rgba(0,0,0,0.07);
         }
+
         .pivot-table th, .pivot-table td {
-            border: 1px solid #ccc;
-            padding: 6px 10px;
+            border: 1px solid #e2e8f0;
+            padding: 6px 12px;
             text-align: center;
+            font-size: 0.86rem;
         }
+
+        .pivot-table th {
+            background: #7c3aed;
+            color: white;
+            font-weight: 600;
+        }
+
         .pivot-title {
-            font-weight: bold;
+            font-weight: 700;
+            font-size: 1rem;
             margin-top: 2rem;
             margin-bottom: 0.5rem;
+            color: #1d4ed8;
+        }
+
+        /* ── Footer ── */
+        .footer {
+            text-align: center;
+            margin-top: 2.5rem;
+            font-size: 0.78rem;
+            color: #94a3b8;
+        }
+
+        .footer a {
+            color: #94a3b8;
         }
     </style>
-
 </head>
 <body>
-    <h2 style='text-align:center;'>Teen Bible Quiz</h2>
-    
-    <h3 style='text-align:center;'>Question Summary Program<br><small><a href = 'https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Version_Notes/Version_2_1/Version_2_1_2.md' target = 'blank'>Version 2.1.1</a></small></h3>
 
-    <p><b>Instructions:</b></p>
-    
-    <pre>1. Wait for the program to load up
-    -> There will be a message in the big black box below letting you know it's ready
-    </pre>
-    
-    <pre>2. Select a file containing official TBQ questions
-    -> Make sure you are inputting a PDF, TXT, DOCX, or RTF file
-    -> Click <a href = 'https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Question_Rules.txt' target='_blank'>here</a> for a list of rules the questions should follow
-    -> The program will automatically start running once it receives your file
-    </pre>
-    
-    <pre>3. Once the program has completed you have the option to...
-    -> View the output in your browser
-    -> View tables summarizing the output in different ways
-       --> Frequency of each Note
-       --> Frequency of each part answer for Concordance-based questions (if applicable)
-       --> Frequency of each type of Chapter Analysis related question
-    -> Download the output as a comma separated file (CSV)
-       --> The downloaded file will appear in your downloads folder 
-    -> The buttons to do these are below the black box
-    </pre>
+    <!-- Header Banner -->
+    <div class="header">
+        <h1>Teen Bible Quiz</h1>
+        <h2>Question Summary Program</h2>
+        <a class="version-link" href="https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Version_Notes/Version_2_1/Version_2_1_2.md" target="_blank">Version 2.1.2</a>
+    </div>
 
-    <pre>Click <a href = 'https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Shorthand_Key.txt' target='_blank'>here</a> to see what the different outputs mean.</pre>
-    
-    <p></p>
-    <!--- Have user select a file --->
-    <!--- https://www.w3schools.com/tags/tryit.asp?filename=tryhtml5_input_type_file --->
-    <label for="input_file">Select a file:</label>
-    <input type="file" id="input_file" name="input_file" accept=".pdf, .txt, .docx, .rtf">
+    <div class="container">
 
-    <!--- Newline for aesthetics --->
-    <p></p>
+        <!-- Instructions Card -->
+        <div class="card">
+            <div class="card-title">Instructions</div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-num">1</div>
+                    <div class="step-content">
+                        Wait for the program to load up
+                        <ul>
+                            <li>There will be a message in the terminal below letting you know it's ready</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">2</div>
+                    <div class="step-content">
+                        Select a file containing official TBQ questions
+                        <ul>
+                            <li>Make sure you are inputting a PDF, TXT, DOCX, or RTF file</li>
+                            <li>Click <a href="https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Question_Rules.txt" target="_blank">here</a> for a list of rules the questions should follow</li>
+                            <li>The program will automatically start running once it receives your file</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-num">3</div>
+                    <div class="step-content">
+                        Once complete, use the buttons below to:
+                        <ul>
+                            <li>View the output in your browser</li>
+                            <li>View summary tables (note frequency, concordance, chapter analysis)</li>
+                            <li>Download the output as a CSV file</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <p class="shorthand-note" style="margin-top:1rem;">
+                <a href="https://github.com/Stone-Snevets/BQ_Question_Summarizer_V_2_0/blob/main/Shorthand_Key.txt" target="_blank">View the Shorthand Key</a> to understand the output fields.
+            </p>
+        </div>
 
-    <!--- Begin the Pyscript script --->
-    <script type="py" src="./main.py" config="./pyscript.toml" terminal></script>
-    <!---
-        <script type="py" src="main.py" config="pyscript.toml" terminal></script>
-    --->
+        <!-- File Upload Card -->
+        <div class="upload-card">
+            <label class="upload-label" for="input_file">Select a Question File</label>
+            <input type="file" id="input_file" name="input_file" accept=".pdf, .txt, .docx, .rtf">
+        </div>
 
-    <p></p>
+        <!-- PyScript Terminal -->
+        <div class="terminal-wrapper">
+            <script type="py" src="./main.py" config="./pyscript.toml" terminal></script>
+        </div>
 
-    <!--- Create a button for the user to simply VIEW the output CSV file --->
-    <button id='view_button'>View Output</button>
+        <!-- Action Buttons -->
+        <div class="actions">
+            <button id="view_button">View Output</button>
+            <button id="download_button">Download Output (CSV)</button>
+            <button id="view_pivot_button">View Summary Tables</button>
+        </div>
 
-    <p></p>
+        <!-- Output Areas -->
+        <pre id="dump"></pre>
+        <div id="output"></div>
+        <div id="output_pivot"></div>
 
-    <!--- Createa a button for the user to DOWNLOAD the output CSV file --->
-    <button id='download_button'>Download Output (CSV)</button>
+        <!-- Footer -->
+        <div class="footer">
+            DISCLAIMER: This program may contain bugs and problems. Please report any issues to <a href="mailto:funnyquestions4jbq@gmail.com">Solomon Stevens</a>.
+        </div>
 
-    <p></p>
-
-    <!--- Create a button for the user to view SUMMARY TABLES of what the program found --->
-    <button id='view_pivot_button'>View Summary Tables</button>
-
-    <pre id='dump'></pre>
-    <div id='output'></div>
-    <div id='output_pivot'></div>
-
-    <p style='text-align:center;'><small>DISCLAIMER: This program may contain bugs and problems.  Please report any issues you find to <a href='mailto:funnyquestions4jbq@gmail.com'>Solomon Stevens</a></small></p>
-    <p></p>
+    </div>
 </body>
 </html>
