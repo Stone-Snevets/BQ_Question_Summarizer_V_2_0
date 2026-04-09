@@ -32,7 +32,6 @@ def split_by_questions(file_contents):
         print('-> Issue with separating out each question from the file')
         print('->', e)
         return []
-        
 
 def get_question_part(question, set_num, question_num):
     """
@@ -97,7 +96,6 @@ def get_question_part(question, set_num, question_num):
         print('->', e)
         return 'QUESTION ISSUE'
 
-
 def get_answer_part(question, q_intro, set_num, question_num):
     """
     Function to retrieve the answer part of the introductory remarks.
@@ -138,7 +136,6 @@ def get_answer_part(question, q_intro, set_num, question_num):
         print(f'-> Set {set_num} Question {question_num}: ANSWER ISSUE')
         print('->', e)
         return 'ANSWER ISSUE'
-        
 
 def get_location(question, set_num, question_num):
     """
@@ -221,7 +218,6 @@ def get_location(question, set_num, question_num):
         print(f'-> Set {set_num} Question {question_num}: LOCATION ISSUE')
         print('->', e)
         return 'LOCATION ISSUE'
-
 
 def sort_refs(ans_ref_str):
     """
@@ -442,7 +438,7 @@ def summarize(file_contents):
                 # Get all the available referenes for where the answer comes from
                 #-> Group what the reference should contain
                 #-> Cast our findings to a set to remove duplicates
-                ans_ref = set(re.findall(r'\[*(\S+ \d+:\d+\S*)', list_of_questions[i][question_ends:]))
+                ans_ref = set(re.findall(r'\[*(\S+ \d+:\d+\]*)', list_of_questions[i][question_ends:]))
                 #-> If there is at least one reference
                 if len(ans_ref) > 0:
                     #-> If there are more than one reference, call sort_refs() to output them in order
